@@ -49,6 +49,12 @@ export default function Doctors() {
   const [formFee, setFormFee] = useState(500);
   const [formDays, setFormDays] = useState<string[]>(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']);
 
+  const toggleDay = (day: string) => {
+    setFormDays(prev =>
+      prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
+    );
+  };
+
   const getFileUrl = (url: string | undefined, defaultImg: string) => {
     if (!url) return defaultImg;
     if (url.startsWith('http://') || url.startsWith('https://')) return url;

@@ -1,4 +1,4 @@
-import { Star, MapPin } from 'lucide-react';
+import { Star } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 export default function Reviews() {
