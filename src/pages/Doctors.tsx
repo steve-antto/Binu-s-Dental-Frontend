@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 import binuImg from '../assets/Binu.jpeg';
 import lokaswariImg from '../assets/Lokaswari.jpeg';
 
-const API_BASE = 'http://localhost:4500';
+const API_BASE = import.meta.env.VITE_API_URL || '';
 
 interface DoctorType {
   _id?: string;

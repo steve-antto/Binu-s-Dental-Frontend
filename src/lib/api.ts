@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { auth } from './firebase';
 
 // Create an Axios instance with base configuration
 const api = axios.create({
@@ -9,14 +10,16 @@ const api = axios.create({
 });
 
 // Add a request interceptor to attach the Firebase ID token
+// This gets a FRESH token from Firebase on every request, preventing expiry issues
 api.interceptors.request.use(
   async (config) => {
-    // We'll get the token from localStorage or Firebase directly
-    // For simplicity, we can store it in localStorage during auth state change
-    const token = localStorage.getItem('firebaseIdToken');
-    if (token) {
+    const user = auth.currentUser;
+
+    if (user) {
+      const token = await user.getIdToken();
       config.headers.Authorization = `Bearer ${token}`;
     }
+
     return config;
   },
   (error) => Promise.reject(error)

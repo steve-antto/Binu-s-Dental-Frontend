@@ -6,7 +6,7 @@ import { Calendar, User, Settings, FileText, ShieldCheck, Users, BarChart3, Cred
 import api from '../lib/api';
 import toast from 'react-hot-toast';
 
-const API_BASE = 'http://localhost:4500';
+const API_BASE = import.meta.env.VITE_API_URL || '';
 
 interface FileItem { filename: string; url: string; }
 interface PhotoItem { filename: string; url: string; caption?: string; }
