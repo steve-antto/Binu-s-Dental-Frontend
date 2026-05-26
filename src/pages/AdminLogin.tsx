@@ -22,10 +22,11 @@ export default function AdminLogin() {
       // Sign in with Firebase
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const token = await userCredential.user.getIdToken();
-      localStorage.setItem('firebaseIdToken', token);
       
-      // Verify role with backend
-      const response = await api.post('/auth/sync-user', { token });
+      // Verify role with backend — explicitly pass token in header
+      const response = await api.post('/auth/sync-user', { token }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       if (response.data.user.role === 'admin' || response.data.user.role === 'doctor') {
          toast.success("Admin access granted.");
          navigate('/portal');

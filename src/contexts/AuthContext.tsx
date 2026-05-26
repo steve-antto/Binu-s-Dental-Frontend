@@ -26,28 +26,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setCurrentUser(user);
         try {
           const token = await user.getIdToken();
-          localStorage.setItem('firebaseIdToken', token);
           
-          // Sync with backend
-          const response = await api.post('/auth/sync-user', { token });
+          // Sync with backend — explicitly pass token in header
+          // because auth.currentUser may not be set yet during onAuthStateChanged
+          const response = await api.post('/auth/sync-user', { token }, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
           setDbUser(response.data.user);
           
           // If language was previously selected, update backend
           const savedLang = localStorage.getItem('i18nextLng');
           if (savedLang && response.data.user) {
-             // We'll implement this endpoint later on the backend
              await api.patch(`/auth/users/${response.data.user._id}/language`, { language: savedLang }).catch(e => console.warn('Language sync failed', e));
           }
           
         } catch (error) {
           console.error("Error syncing user:", error);
           toast.error("Failed to authenticate with server");
-          localStorage.removeItem('firebaseIdToken');
         }
       } else {
         setCurrentUser(null);
         setDbUser(null);
-        localStorage.removeItem('firebaseIdToken');
       }
       setLoading(false);
     });
