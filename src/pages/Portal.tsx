@@ -117,6 +117,17 @@ export default function Portal() {
     }
   };
 
+  const deleteScan = async (scanId: string) => {
+    try {
+      await api.delete(`/medical/scan/${scanId}`);
+      refreshAppts();
+      toast.success("Scan deleted successfully");
+    } catch (error) {
+      console.error("Delete scan failed", error);
+      toast.error("Delete scan failed");
+    }
+  };
+
   const deleteAppointment = async (id: string, patientName: string) => {
     if (!window.confirm(`Are you sure you want to delete the appointment for ${patientName}?`)) return;
     try {
@@ -405,6 +416,15 @@ export default function Portal() {
                                 <p className="mt-2 text-sm text-gray-500">
                                   {scan.name || scan.filename || "Scan"}
                                 </p>
+
+                                {isAdmin && scan._id && (
+                                  <button
+                                    onClick={() => deleteScan(scan._id!)}
+                                    className="mt-3 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
+                                  >
+                                    Delete Scan
+                                  </button>
+                                )}
                               </div>
                             );
                           }
