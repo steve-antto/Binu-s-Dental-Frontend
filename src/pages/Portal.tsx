@@ -106,15 +106,7 @@ export default function Portal() {
     } catch (e: any) { toast.error(e.response?.data?.message || t('update_failed')); }
   };
 
-  const deleteFile = async (id: string, type: 'scan' | 'report', url: string) => {
-    try {
-      await api.delete(`/medical/appointments/${id}/files`, { data: { type, url } });
-      toast.success(t('delete_success'));
-      refreshAppts();
-    } catch (e: any) {
-      toast.error(e.response?.data?.message || t('update_failed'));
-    }
-  };
+
 
   const deleteAppointment = async (id: string, patientName: string) => {
     if (!window.confirm(`Are you sure you want to delete the appointment for ${patientName}?`)) return;
