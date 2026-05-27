@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
-interface FileItem { filename: string; url: string; }
+interface FileItem { _id?: string; filename: string; url: string; resourceType?: string; name?: string; }
 interface PhotoItem { filename: string; url: string; caption?: string; }
 interface Appt { _id: string; patientName: string; patientPhone: string; patientEmail: string; date: string; time: string; service: string; status: string; paymentStatus: string; paymentAmount: number; prescription: string; medicalHistory: string; notes: string; scans: FileItem[]; reports: FileItem[]; photos: PhotoItem[]; }
 
@@ -106,7 +106,16 @@ export default function Portal() {
     } catch (e: any) { toast.error(e.response?.data?.message || t('update_failed')); }
   };
 
-
+  const deleteReport = async (reportId: string) => {
+    try {
+      await api.delete(`/medical/report/${reportId}`);
+      refreshAppts();
+      toast.success("Report deleted successfully");
+    } catch (error) {
+      console.error("Delete failed", error);
+      toast.error("Delete failed");
+    }
+  };
 
   const deleteAppointment = async (id: string, patientName: string) => {
     if (!window.confirm(`Are you sure you want to delete the appointment for ${patientName}?`)) return;
@@ -364,32 +373,37 @@ export default function Portal() {
                         {selectedAppt?.scans?.map(
                           (scan: any, index: number) => {
                             const isPdf =
-                              scan.url?.toLowerCase().includes(".pdf");
+                              scan.url?.toLowerCase().includes(".pdf") ||
+                              scan.resourceType === "raw";
 
                             return (
                               <div
                                 key={index}
-                                className="border rounded-lg p-4 bg-white shadow-sm"
+                                className="border rounded-lg p-3 flex flex-col items-center bg-white shadow-sm"
                               >
                                 {isPdf ? (
-                                  <a
-                                    href={scan.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 font-medium underline"
-                                  >
-                                    📄 Open Scan PDF
-                                  </a>
+                                  <>
+                                    <div className="text-5xl">📄</div>
+
+                                    <a
+                                      href={scan.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 underline mt-2 text-sm text-center"
+                                    >
+                                      Open Scan PDF
+                                    </a>
+                                  </>
                                 ) : (
                                   <img
                                     src={scan.url}
                                     alt="scan"
-                                    className="w-40 h-40 object-cover rounded"
+                                    className="w-48 h-48 object-cover rounded"
                                   />
                                 )}
 
-                                <p className="text-sm text-gray-500 mt-2">
-                                  {scan.name || "Scan"}
+                                <p className="mt-2 text-sm text-gray-500">
+                                  {scan.name || scan.filename || "Scan"}
                                 </p>
                               </div>
                             );
@@ -411,33 +425,47 @@ export default function Portal() {
                         {selectedAppt?.reports?.map(
                           (report: any, index: number) => {
                             const isPdf =
-                              report.url?.toLowerCase().includes(".pdf");
+                              report.url?.toLowerCase().includes(".pdf") ||
+                              report.resourceType === "raw";
 
                             return (
                               <div
                                 key={index}
-                                className="border rounded-lg p-4 bg-white shadow-sm"
+                                className="border rounded-lg p-3 flex flex-col items-center bg-white shadow-sm"
                               >
                                 {isPdf ? (
-                                  <a
-                                    href={report.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 font-medium underline"
-                                  >
-                                    📄 Open PDF Report
-                                  </a>
+                                  <>
+                                    <div className="text-5xl">📄</div>
+
+                                    <a
+                                      href={report.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 underline mt-2 text-sm text-center"
+                                    >
+                                      Open PDF Report
+                                    </a>
+                                  </>
                                 ) : (
                                   <img
                                     src={report.url}
                                     alt="report"
-                                    className="w-40 h-40 object-cover rounded"
+                                    className="w-48 h-48 object-cover rounded"
                                   />
                                 )}
 
-                                <p className="text-sm text-gray-500 mt-2">
-                                  {report.name || "Report"}
+                                <p className="mt-2 text-sm text-gray-500">
+                                  {report.name || report.filename || "Report"}
                                 </p>
+
+                                {isAdmin && report._id && (
+                                  <button
+                                    onClick={() => deleteReport(report._id!)}
+                                    className="mt-2 bg-red-600 text-white px-3 py-1 rounded"
+                                  >
+                                    Delete
+                                  </button>
+                                )}
                               </div>
                             );
                           }
