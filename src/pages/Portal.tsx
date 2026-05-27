@@ -368,44 +368,41 @@ export default function Portal() {
                       📷 {t('scans_label')}
                     </p>
                     {selectedAppt.scans?.length > 0 ? (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {selectedAppt.scans.map((scan: any, index: number) => (
-                          <div
-                            key={index}
-                            className="border rounded-lg p-3 flex flex-col items-center gap-2 relative group"
-                          >
-                            {scan.url?.toLowerCase().includes(".pdf") ? (
-                              <a
-                                href={getFileUrl(scan.url)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 underline font-medium text-center w-full p-2 bg-cyan-50 rounded-lg break-all"
-                              >
-                                📄 Open Scan PDF
-                              </a>
-                            ) : (
-                              <img
-                                src={getFileUrl(scan.url)}
-                                alt="scan"
-                                className="w-40 h-40 object-cover rounded cursor-pointer"
-                                onClick={() => setLightbox({ src: getFileUrl(scan.url), alt: "scan" })}
-                              />
-                            )}
+                      <div className="space-y-4">
+                        {selectedAppt?.scans?.map(
+                          (scan: any, index: number) => {
+                            const isPdf =
+                              scan.url?.toLowerCase().includes(".pdf");
 
-                            <p className="text-sm text-gray-500 break-all text-center">
-                              {scan.filename || "Scan"}
-                            </p>
-
-                            {isAdmin && (
-                              <button 
-                                onClick={(e) => { e.stopPropagation(); deleteFile(selectedAppt._id, 'scan', scan.url); }}
-                                className="mt-1 px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition flex items-center justify-center text-xs w-full"
+                            return (
+                              <div
+                                key={index}
+                                className="border rounded-lg p-4 bg-white shadow-sm"
                               >
-                                <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
-                              </button>
-                            )}
-                          </div>
-                        ))}
+                                {isPdf ? (
+                                  <a
+                                    href={scan.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 font-medium underline"
+                                  >
+                                    📄 Open Scan PDF
+                                  </a>
+                                ) : (
+                                  <img
+                                    src={scan.url}
+                                    alt="scan"
+                                    className="w-40 h-40 object-cover rounded"
+                                  />
+                                )}
+
+                                <p className="text-sm text-gray-500 mt-2">
+                                  {scan.name || "Scan"}
+                                </p>
+                              </div>
+                            );
+                          }
+                        )}
                       </div>
                     ) : (
                       <p className="text-xs text-gray-400 italic py-2">{t('no_scans_yet')}</p>
@@ -418,44 +415,41 @@ export default function Portal() {
                       📄 {t('reports_label')}
                     </p>
                     {selectedAppt.reports?.length > 0 ? (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {selectedAppt.reports.map((report: any, index: number) => (
-                          <div
-                            key={index}
-                            className="border rounded-lg p-3 flex flex-col items-center gap-2 relative group"
-                          >
-                            {report.url?.toLowerCase().includes(".pdf") ? (
-                              <a
-                                href={getFileUrl(report.url)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 underline font-medium text-center w-full p-2 bg-amber-50 rounded-lg break-all"
-                              >
-                                📄 Open PDF Report
-                              </a>
-                            ) : (
-                              <img
-                                src={getFileUrl(report.url)}
-                                alt="report"
-                                className="w-40 h-40 object-cover rounded cursor-pointer"
-                                onClick={() => setLightbox({ src: getFileUrl(report.url), alt: "report" })}
-                              />
-                            )}
+                      <div className="space-y-4">
+                        {selectedAppt?.reports?.map(
+                          (report: any, index: number) => {
+                            const isPdf =
+                              report.url?.toLowerCase().includes(".pdf");
 
-                            <p className="text-sm text-gray-500 break-all text-center">
-                              {report.filename || "Report"}
-                            </p>
-
-                            {isAdmin && (
-                              <button 
-                                onClick={(e) => { e.stopPropagation(); deleteFile(selectedAppt._id, 'report', report.url); }}
-                                className="mt-1 px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition flex items-center justify-center text-xs w-full"
+                            return (
+                              <div
+                                key={index}
+                                className="border rounded-lg p-4 bg-white shadow-sm"
                               >
-                                <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
-                              </button>
-                            )}
-                          </div>
-                        ))}
+                                {isPdf ? (
+                                  <a
+                                    href={report.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 font-medium underline"
+                                  >
+                                    📄 Open PDF Report
+                                  </a>
+                                ) : (
+                                  <img
+                                    src={report.url}
+                                    alt="report"
+                                    className="w-40 h-40 object-cover rounded"
+                                  />
+                                )}
+
+                                <p className="text-sm text-gray-500 mt-2">
+                                  {report.name || "Report"}
+                                </p>
+                              </div>
+                            );
+                          }
+                        )}
                       </div>
                     ) : (
                       <p className="text-xs text-gray-400 italic py-2">{t('no_reports_yet')}</p>
