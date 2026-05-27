@@ -132,7 +132,7 @@ export default function Portal() {
     if (!url) return '';
     return url.startsWith('http') ? url : `${API_BASE}${url}`;
   };
-  const isImage = (filename: string) => /\.(jpg|jpeg|png|gif|webp|bmp|tiff)$/i.test(filename);
+
 
   const todayAppts = appointments.filter(a => a.date === new Date().toISOString().split('T')[0]);
   const thisMonthAppts = appointments.filter(a => a.date?.startsWith(new Date().toISOString().slice(0, 7)));
