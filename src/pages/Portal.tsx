@@ -128,7 +128,10 @@ export default function Portal() {
     }
   };
 
-  const getFileUrl = (url: string) => url.startsWith('http') ? url : `${API_BASE}${url}`;
+  const getFileUrl = (url: string | undefined | null) => {
+    if (!url) return '';
+    return url.startsWith('http') ? url : `${API_BASE}${url}`;
+  };
   const isImage = (filename: string) => /\.(jpg|jpeg|png|gif|webp|bmp|tiff)$/i.test(filename);
 
   const todayAppts = appointments.filter(a => a.date === new Date().toISOString().split('T')[0]);
