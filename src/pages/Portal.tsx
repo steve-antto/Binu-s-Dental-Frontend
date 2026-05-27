@@ -370,42 +370,40 @@ export default function Portal() {
                     {selectedAppt.scans?.length > 0 ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {selectedAppt.scans.map((scan: any, index: number) => (
-                          <div key={index} className="border rounded p-2 relative group">
-                            {scan.url?.toLowerCase().endsWith(".pdf") ? (
-                              <div className="flex gap-1 items-stretch">
-                                <a href={getFileUrl(scan.url)} target="_blank" rel="noopener noreferrer" className="flex-1 block p-3 bg-cyan-50 rounded-xl text-blue-600 underline text-xs hover:bg-cyan-100 transition break-all">
-                                  📄 Open Scan PDF
-                                </a>
-                                {isAdmin && (
-                                  <button 
-                                    onClick={() => deleteFile(selectedAppt._id, 'scan', scan.url)}
-                                    className="px-3 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl transition flex items-center justify-center"
-                                    title="Delete File"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </button>
-                                )}
-                              </div>
+                          <div
+                            key={index}
+                            className="border rounded-lg p-3 flex flex-col items-center gap-2 relative group"
+                          >
+                            {scan.url?.toLowerCase().includes(".pdf") ? (
+                              <a
+                                href={getFileUrl(scan.url)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 underline font-medium text-center w-full p-2 bg-cyan-50 rounded-lg break-all"
+                              >
+                                📄 Open Scan PDF
+                              </a>
                             ) : (
-                              <div className="cursor-pointer relative overflow-hidden rounded-xl border border-gray-200 group-hover:border-primary transition-all">
-                                <div onClick={() => setLightbox({ src: getFileUrl(scan.url), alt: "scan" })}>
-                                  <img src={getFileUrl(scan.url)} alt="scan" className="w-full h-32 object-cover rounded" />
-                                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/35 flex items-center justify-center transition-all">
-                                    <ZoomIn className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-all" />
-                                  </div>
-                                </div>
-                                {isAdmin && (
-                                  <button 
-                                    onClick={(e) => { e.stopPropagation(); deleteFile(selectedAppt._id, 'scan', scan.url); }}
-                                    className="absolute top-1.5 right-1.5 p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg active:scale-90 transition-all shadow-md z-10"
-                                    title="Delete File"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </button>
-                                )}
-                              </div>
+                              <img
+                                src={getFileUrl(scan.url)}
+                                alt="scan"
+                                className="w-40 h-40 object-cover rounded cursor-pointer"
+                                onClick={() => setLightbox({ src: getFileUrl(scan.url), alt: "scan" })}
+                              />
                             )}
-                            <p className="text-[10px] text-gray-400 mt-1 break-all">{scan.filename}</p>
+
+                            <p className="text-sm text-gray-500 break-all text-center">
+                              {scan.filename || "Scan"}
+                            </p>
+
+                            {isAdmin && (
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); deleteFile(selectedAppt._id, 'scan', scan.url); }}
+                                className="mt-1 px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition flex items-center justify-center text-xs w-full"
+                              >
+                                <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
+                              </button>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -422,42 +420,40 @@ export default function Portal() {
                     {selectedAppt.reports?.length > 0 ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {selectedAppt.reports.map((report: any, index: number) => (
-                          <div key={index} className="border rounded p-2 relative group">
-                            {report.url?.toLowerCase().endsWith(".pdf") ? (
-                              <div className="flex gap-1 items-stretch">
-                                <a href={getFileUrl(report.url)} target="_blank" rel="noopener noreferrer" className="flex-1 block p-3 bg-amber-50 rounded-xl text-blue-600 underline text-xs hover:bg-amber-100 transition break-all">
-                                  📄 Open PDF Report
-                                </a>
-                                {isAdmin && (
-                                  <button 
-                                    onClick={() => deleteFile(selectedAppt._id, 'report', report.url)}
-                                    className="px-3 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl transition flex items-center justify-center"
-                                    title="Delete File"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </button>
-                                )}
-                              </div>
+                          <div
+                            key={index}
+                            className="border rounded-lg p-3 flex flex-col items-center gap-2 relative group"
+                          >
+                            {report.url?.toLowerCase().includes(".pdf") ? (
+                              <a
+                                href={getFileUrl(report.url)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 underline font-medium text-center w-full p-2 bg-amber-50 rounded-lg break-all"
+                              >
+                                📄 Open PDF Report
+                              </a>
                             ) : (
-                              <div className="cursor-pointer relative overflow-hidden rounded-xl border border-gray-200 group-hover:border-primary transition-all">
-                                <div onClick={() => setLightbox({ src: getFileUrl(report.url), alt: "report" })}>
-                                  <img src={getFileUrl(report.url)} alt="report" className="w-full h-32 object-cover rounded" />
-                                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/35 flex items-center justify-center transition-all">
-                                    <ZoomIn className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-all" />
-                                  </div>
-                                </div>
-                                {isAdmin && (
-                                  <button 
-                                    onClick={(e) => { e.stopPropagation(); deleteFile(selectedAppt._id, 'report', report.url); }}
-                                    className="absolute top-1.5 right-1.5 p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg active:scale-90 transition-all shadow-md z-10"
-                                    title="Delete File"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </button>
-                                )}
-                              </div>
+                              <img
+                                src={getFileUrl(report.url)}
+                                alt="report"
+                                className="w-40 h-40 object-cover rounded cursor-pointer"
+                                onClick={() => setLightbox({ src: getFileUrl(report.url), alt: "report" })}
+                              />
                             )}
-                            <p className="text-[10px] text-gray-400 mt-1 break-all">{report.filename}</p>
+
+                            <p className="text-sm text-gray-500 break-all text-center">
+                              {report.filename || "Report"}
+                            </p>
+
+                            {isAdmin && (
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); deleteFile(selectedAppt._id, 'report', report.url); }}
+                                className="mt-1 px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition flex items-center justify-center text-xs w-full"
+                              >
+                                <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
+                              </button>
+                            )}
                           </div>
                         ))}
                       </div>
