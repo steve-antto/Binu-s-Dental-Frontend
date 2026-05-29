@@ -44,7 +44,7 @@ export default function Portal() {
 
   useEffect(() => {
     if (currentUser && typeof currentUser.getIdToken === 'function') {
-      currentUser.getIdToken().then(setToken);
+      currentUser.getIdToken(true).then(setToken);
     } else {
       setToken(localStorage.getItem('token') || '');
     }

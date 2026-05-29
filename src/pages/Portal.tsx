@@ -45,7 +45,7 @@ export default function Portal() {
 
   useEffect(() => {
     if (currentUser && typeof currentUser.getIdToken === 'function') {
-      currentUser.getIdToken().then(setToken);
+      currentUser.getIdToken(true).then(setToken);
     } else {
       setToken(localStorage.getItem('token') || '');
     }
@@ -57,7 +57,7 @@ export default function Portal() {
       if (!user) return;
       
       try {
-        const token = await user.getIdToken();
+        const token = await user.getIdToken(true);
         const response = await fetch(`https://binu-s-dental-backend.vercel.app/api/v1/medical/appointments/date/${selectedDate}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -78,7 +78,7 @@ export default function Portal() {
     try {
       const user = auth.currentUser;
       if (!user) return;
-      const token = await user.getIdToken();
+      const token = await user.getIdToken(true);
       const API_URL = "https://binu-s-dental-backend.vercel.app";
       const endpoint = isAdmin ? '/api/v1/medical/all-appointments' : '/api/v1/medical/my-appointments';
       

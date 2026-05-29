@@ -51,7 +51,7 @@ export default function AdminPortal() {
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p>Loading Admin Portal...</p>
+        <h2>Loading Admin Portal...</h2>
       </div>
     );
   }

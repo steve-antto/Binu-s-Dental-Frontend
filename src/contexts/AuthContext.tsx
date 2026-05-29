@@ -24,7 +24,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
-          const token = await user.getIdToken();
+          const token = await user.getIdToken(true);
           localStorage.setItem("token", token);
           setCurrentUser(user);
           
