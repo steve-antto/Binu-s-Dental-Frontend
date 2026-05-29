@@ -65,8 +65,10 @@ export default function Portal() {
     const token = await user.getIdToken(true);
     const API_URL = import.meta.env.VITE_API_URL || "https://binu-s-dental-backend.vercel.app";
 
+    const formattedDate = new Date(selectedDate).toISOString().split("T")[0];
+
     const response = await fetch(
-      `${API_URL}/api/v1/medical/appointments/date/${selectedDate}`,
+      `${API_URL}/api/v1/medical/appointments/date/${formattedDate}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
