@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { Calendar, User, Settings, FileText, ShieldCheck, Users, BarChart3, CreditCard, ClipboardList, ScanLine, Pill, Upload, X, ZoomIn, Trash2, Camera } from 'lucide-react';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
-import DentalChart from '../components/DentalChart';
+import InteractiveDentalChart from '../components/InteractiveDentalChart';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -398,7 +398,7 @@ export default function Portal() {
                       <button onClick={() => updateField(selectedAppt._id, 'medicalHistory', (document.getElementById('historyField') as any)?.value)} className="mt-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg text-xs font-bold w-full transition-all">{t('save_btn')}</button>
                       
                       {selectedAppt?._id && (
-                        <DentalChart
+                        <InteractiveDentalChart
                           key={selectedAppt._id}
                           appointmentId={selectedAppt._id}
                           existingChart={selectedAppt.dentalChart}
