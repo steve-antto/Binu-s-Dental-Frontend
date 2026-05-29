@@ -62,7 +62,7 @@ export default function Portal() {
     const user = auth.currentUser;
     if (!user) return;
 
-    const token = await user.getIdToken(true);
+    const token = await user.getIdToken();
     const API_URL = import.meta.env.VITE_API_URL || "https://binu-s-dental-backend.vercel.app";
 
     const formattedDate = new Date(selectedDate).toISOString().split("T")[0];
@@ -90,6 +90,7 @@ export default function Portal() {
 
   const refreshAppts = () => {
     const endpoint = isAdmin ? '/medical/all-appointments' : '/medical/my-appointments';
+    console.log("Fetching:", endpoint);
     api.get(endpoint).then(res => {
       const appts = res.data?.appointments || [];
       setAppointments(appts);
