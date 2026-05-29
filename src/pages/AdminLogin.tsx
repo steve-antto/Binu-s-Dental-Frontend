@@ -21,7 +21,7 @@ export default function AdminLogin() {
     try {
       // Sign in with Firebase
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const token = await userCredential.user.getIdToken();
+      const token = await userCredential.user.getIdToken(true);
       
       // Verify role with backend — explicitly pass token in header
       const response = await api.post('/auth/sync-user', { token }, {

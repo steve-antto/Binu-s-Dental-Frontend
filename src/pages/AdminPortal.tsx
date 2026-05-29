@@ -12,13 +12,23 @@ export default function AdminPortal() {
   // Using token from our Auth context if available, otherwise fallback to localStorage
   const { currentUser } = useAuth();
   const [token, setToken] = useState("");
+  const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
-    if (currentUser) {
-      currentUser.getIdToken().then(setToken);
-    } else {
-      setToken(localStorage.getItem("token") || "");
-    }
+    const getFreshToken = async () => {
+      try {
+        if (currentUser) {
+          const freshToken = await currentUser.getIdToken(true);
+          setToken(freshToken);
+        }
+      } catch (error) {
+        console.error("Token refresh failed:", error);
+      } finally {
+        setAuthLoading(false);
+      }
+    };
+
+    getFreshToken();
   }, [currentUser]);
 
   useEffect(() => {
@@ -38,6 +48,13 @@ export default function AdminPortal() {
         console.error("Failed to fetch appointments:", err);
       });
   }, [selectedDate, token]);
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Loading Admin Portal...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="pt-32 pb-16 min-h-screen bg-gray-50 px-4 sm:px-6 lg:px-8">
