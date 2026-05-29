@@ -60,7 +60,7 @@ function App() {
             <Route path="admin/login" element={<AdminLogin />} />
             <Route path="admin/portal" element={
               <AdminProtectedRoute>
-                <AdminPortal />
+                <Portal />
               </AdminProtectedRoute>
             } />
             <Route path="login" element={<Login />} />
