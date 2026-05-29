@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useAuth } from "../contexts/AuthContext";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
+const API_URL = "https://binu-s-dental-backend.vercel.app/api/v1";
 
 export default function AdminPortal() {
   const [selectedDate, setSelectedDate] = useState("");

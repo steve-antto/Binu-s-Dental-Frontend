@@ -28,8 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           localStorage.setItem("token", token);
           setCurrentUser(user);
           
-          const API_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '';
-          const response = await fetch(`${API_URL}/api/v1/auth/me`, {
+          const response = await fetch(`https://binu-s-dental-backend.vercel.app/api/v1/auth/me`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },

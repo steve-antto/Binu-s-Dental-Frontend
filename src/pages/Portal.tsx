@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 import { auth } from '../lib/firebase';
 import InteractiveDentalChart from '../components/InteractiveDentalChart';
 
-const API_BASE = import.meta.env.VITE_API_URL || '';
+const API_BASE = "https://binu-s-dental-backend.vercel.app";
 
 interface FileItem { _id?: string; filename: string; url: string; resourceType?: string; name?: string; }
 interface PhotoItem { filename: string; url: string; caption?: string; }
@@ -63,12 +63,10 @@ export default function Portal() {
     if (!user) return;
 
     const token = await user.getIdToken();
-    const API_URL = import.meta.env.VITE_API_URL || "https://binu-s-dental-backend.vercel.app";
-
     const formattedDate = new Date(selectedDate).toISOString().split("T")[0];
 
     const response = await fetch(
-      `${API_URL}/api/v1/medical/appointments/date/${formattedDate}`,
+      `https://binu-s-dental-backend.vercel.app/api/v1/medical/appointments/date/${formattedDate}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,

@@ -2,9 +2,7 @@ import axios from "axios";
 import { auth } from "./firebase";
 
 const api = axios.create({
-  baseURL:
-    import.meta.env.VITE_API_URL ||
-    "https://binu-s-dental-backend.vercel.app/api/v1",
+  baseURL: "https://binu-s-dental-backend.vercel.app/api/v1",
 });
 
 api.interceptors.request.use(

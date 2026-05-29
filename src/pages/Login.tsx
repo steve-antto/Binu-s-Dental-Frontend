@@ -26,8 +26,7 @@ export default function Login() {
         const userCred = await signInWithEmailAndPassword(auth, email, password);
         toast.success(t('login_success'));
         const token = await userCred.user.getIdToken();
-        const API_URL = import.meta.env.VITE_API_URL || '';
-        const res = await fetch(`${API_URL}/api/v1/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+        const res = await fetch(`https://binu-s-dental-backend.vercel.app/api/v1/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
         const data = await res.json();
         role = data.user?.role;
       } else {
@@ -54,8 +53,7 @@ export default function Login() {
       toast.success(t('google_login_success'));
       
       const token = await userCred.user.getIdToken();
-      const API_URL = import.meta.env.VITE_API_URL || '';
-      const res = await fetch(`${API_URL}/api/v1/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`https://binu-s-dental-backend.vercel.app/api/v1/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       const role = data.user?.role;
       

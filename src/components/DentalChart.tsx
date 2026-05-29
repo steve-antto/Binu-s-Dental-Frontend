@@ -137,7 +137,7 @@ export default function DentalChart({
 
       const response =
       await fetch(
-`${import.meta.env.VITE_API_URL}/medical/dental-chart/${appointmentId}`,
+`https://binu-s-dental-backend.vercel.app/api/v1/medical/appointments/${appointmentId}/dental-chart`,
 {
 method:"PUT",
 
