@@ -41,6 +41,7 @@ export default function Portal() {
   const photoFileRef = useRef<HTMLInputElement>(null);
   const [, setToken] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
+  const [dailyAppointments, setDailyAppointments] = useState<Appt[]>([]);
   const [medicalHistory, setMedicalHistory] = useState("");
 
   useEffect(() => {
@@ -71,7 +72,7 @@ export default function Portal() {
     );
     
     const data = await response.json();
-    setAppointments(data.appointments || []);
+    setDailyAppointments(data.appointments || []);
   };
 
   useEffect(() => {
@@ -238,11 +239,11 @@ export default function Portal() {
                   <Link to="/booking" className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-hover transition-colors">{t('book_now')}</Link>
                 </div>
                 {loading ? <div className="p-12 text-center text-gray-400">Loading...</div> :
-                appointments.length === 0 ? (
+                (selectedDate ? dailyAppointments : appointments).length === 0 ? (
                   <div className="p-12 text-center text-gray-400"><Calendar className="w-12 h-12 mx-auto mb-3 text-gray-300" /><p>{t('no_appointments')}</p></div>
                 ) : (
                   <div className="divide-y divide-gray-50 max-h-[600px] overflow-y-auto">
-                    {appointments.map(appt => (
+                    {(selectedDate ? dailyAppointments : appointments).map(appt => (
                       <div key={appt._id} onClick={() => setSelectedAppt(appt)} className={`p-4 cursor-pointer hover:bg-blue-50/50 transition-colors ${selectedAppt?._id === appt._id ? 'bg-blue-50 border-l-4 border-primary' : ''}`}>
                         <div className="flex items-center justify-between">
                           <div>
