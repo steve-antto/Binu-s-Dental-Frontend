@@ -142,12 +142,14 @@ export default function InteractiveDentalChart({
   useEffect(() => {
     if (!existingChart) return;
 
-    setGender(existingChart.gender || "female");
-    setDentitionType(existingChart.dentitionType || "adult");
-    setBitewing(existingChart.bitewing || false);
-    setViewType(existingChart.viewType || "LM");
-    setSelectedTeeth(existingChart.selectedTeeth || []);
-    setToothConditions(existingChart.toothConditions || {});
+    console.log("Loaded chart:", existingChart);
+
+    setGender(existingChart?.gender ?? "female");
+    setDentitionType(existingChart?.dentitionType ?? "adult");
+    setBitewing(existingChart?.bitewing ?? false);
+    setViewType(existingChart?.viewType ?? "LM");
+    setSelectedTeeth(existingChart?.selectedTeeth ?? []);
+    setToothConditions(existingChart?.toothConditions ?? {});
   }, [existingChart]);
 
   const saveDentalChart = async () => {
@@ -211,8 +213,8 @@ export default function InteractiveDentalChart({
             setGender("male")
           }
           className={`px-4 py-2 rounded font-bold ${gender === "male"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-300 text-gray-800"
+            ? "bg-blue-600 text-white"
+            : "bg-gray-300 text-gray-800"
             }`}
         >
           ♂ Male
@@ -223,8 +225,8 @@ export default function InteractiveDentalChart({
             setGender("female")
           }
           className={`px-4 py-2 rounded font-bold ${gender === "female"
-              ? "bg-pink-600 text-white"
-              : "bg-gray-300 text-gray-800"
+            ? "bg-pink-600 text-white"
+            : "bg-gray-300 text-gray-800"
             }`}
         >
           ♀ Female
@@ -234,22 +236,20 @@ export default function InteractiveDentalChart({
       <div className="flex gap-3 mb-4">
         <button
           onClick={() => setDentitionType("adult")}
-          className={`px-4 py-2 rounded font-bold ${
-            dentitionType === "adult"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-300 text-gray-800"
-          }`}
+          className={`px-4 py-2 rounded font-bold ${dentitionType === "adult"
+            ? "bg-blue-600 text-white"
+            : "bg-gray-300 text-gray-800"
+            }`}
         >
           Adult
         </button>
 
         <button
           onClick={() => setDentitionType("child")}
-          className={`px-4 py-2 rounded font-bold ${
-            dentitionType === "child"
-              ? "bg-green-600 text-white"
-              : "bg-gray-300 text-gray-800"
-          }`}
+          className={`px-4 py-2 rounded font-bold ${dentitionType === "child"
+            ? "bg-green-600 text-white"
+            : "bg-gray-300 text-gray-800"
+            }`}
         >
           Child
         </button>

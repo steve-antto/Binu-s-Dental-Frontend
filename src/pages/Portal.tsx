@@ -408,7 +408,7 @@ export default function Portal() {
                         <InteractiveDentalChart
                           key={selectedAppt._id}
                           appointmentId={selectedAppt._id}
-                          existingChart={selectedAppt.dentalChart}
+                          existingChart={selectedAppt?.dentalChart}
                           medicalHistory={medicalHistory}
                         />
                       )}
