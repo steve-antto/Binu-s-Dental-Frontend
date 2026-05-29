@@ -162,7 +162,7 @@ export default function InteractiveDentalChart({
       const API_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
       const response = await fetch(
-        `${API_URL}/api/medical/appointments/${appointmentId}/dental-chart`,
+        `${API_URL}/api/v1/medical/appointments/${appointmentId}/dental-chart`,
         {
           method: "PUT",
           headers: {
