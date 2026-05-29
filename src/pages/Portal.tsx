@@ -59,9 +59,12 @@ export default function Portal() {
   }, [currentUser]);
 
   const fetchAppointmentsByDate = async () => {
-    const token = await auth.currentUser?.getIdToken(true);
-    const API_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '';
-    
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const token = await user.getIdToken(true);
+    const API_URL = import.meta.env.VITE_API_URL;
+
     const response = await fetch(
       `${API_URL}/api/v1/medical/appointments/date/${selectedDate}`,
       {
@@ -70,16 +73,15 @@ export default function Portal() {
         },
       }
     );
-    
+
     const data = await response.json();
+
     setDailyAppointments(data.appointments || []);
   };
 
   useEffect(() => {
-    if (selectedDate && isAdmin) {
+    if (selectedDate) {
       fetchAppointmentsByDate();
-    } else if (!selectedDate && isAdmin) {
-      refreshAppts();
     }
   }, [selectedDate]);
 
@@ -230,7 +232,7 @@ export default function Portal() {
                       type="date"
                       value={selectedDate}
                       onChange={(e) => setSelectedDate(e.target.value)}
-                      className="border rounded-lg p-2 outline-none focus:ring-2 focus:ring-primary focus:border-primary text-gray-700 font-medium bg-white"
+                      className="border rounded px-3 py-2"
                     />
                   </div>
                 )}
