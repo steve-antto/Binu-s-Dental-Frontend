@@ -1,5 +1,5 @@
 import { useState } from "react";
-import dentalImage from "../assets/dental-arch.png";
+const dentalImage = "/dental-arch.jpeg";
 import axios from "axios";
 
 type Props = {
