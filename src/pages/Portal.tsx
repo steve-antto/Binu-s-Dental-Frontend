@@ -41,7 +41,6 @@ export default function Portal() {
   const photoFileRef = useRef<HTMLInputElement>(null);
   const [, setToken] = useState("");
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
-  const [, setDailyAppointments] = useState<Appt[]>([]);
   const [medicalHistory, setMedicalHistory] = useState("");
 
   useEffect(() => {
