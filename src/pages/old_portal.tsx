@@ -5,13 +5,12 @@ import { Link } from 'react-router-dom';
 import { Calendar, User, Settings, FileText, ShieldCheck, Users, BarChart3, CreditCard, ClipboardList, ScanLine, Pill, Upload, X, ZoomIn, Trash2, Camera } from 'lucide-react';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
-import InteractiveDentalChart from '../components/InteractiveDentalChart';
 
-const API_BASE = "https://binu-s-dental-backend.vercel.app";
+const API_BASE = 'http://localhost:4500';
 
-interface FileItem { _id?: string; filename: string; url: string; resourceType?: string; name?: string; }
+interface FileItem { filename: string; url: string; }
 interface PhotoItem { filename: string; url: string; caption?: string; }
-interface Appt { _id: string; patientName: string; patientPhone: string; patientEmail: string; date: string; time: string; service: string; status: string; paymentStatus: string; paymentAmount: number; prescription: string; medicalHistory: string; notes: string; scans: FileItem[]; reports: FileItem[]; photos: PhotoItem[]; dentalChart?: any; }
+interface Appt { _id: string; patientName: string; patientPhone: string; patientEmail: string; date: string; time: string; service: string; status: string; paymentStatus: string; paymentAmount: number; prescription: string; medicalHistory: string; notes: string; scans: FileItem[]; reports: FileItem[]; photos: PhotoItem[]; }
 
 // Lightbox component for enlarging images
 function Lightbox({ src, alt, onClose }: { src: string; alt: string; onClose: () => void }) {
@@ -38,64 +37,19 @@ export default function Portal() {
   const scanFileRef = useRef<HTMLInputElement>(null);
   const reportFileRef = useRef<HTMLInputElement>(null);
   const photoFileRef = useRef<HTMLInputElement>(null);
-  const [token, setToken] = useState("");
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
-  const [dailyAppointments, setDailyAppointments] = useState<Appt[]>([]);
 
-  useEffect(() => {
-    if (currentUser && typeof currentUser.getIdToken === 'function') {
-      currentUser.getIdToken().then(setToken);
-    } else {
-      setToken(localStorage.getItem('token') || '');
-    }
-  }, [currentUser]);
-
-  useEffect(() => {
-    const fetchAppointmentsByDate = async () => {
-      const user = auth.currentUser;
-      if (!user) return;
-      
-      try {
-        const token = await user.getIdToken();
-        const response = await fetch(`https://binu-s-dental-backend.vercel.app/api/v1/medical/appointments/date/${selectedDate}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const data = await response.json();
-        setDailyAppointments(data.appointments || []);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    if (isAdmin && selectedDate) {
-      fetchAppointmentsByDate();
-    } else if (isAdmin && !selectedDate) {
-      refreshAppts();
-    }
-  }, [selectedDate, isAdmin]);
-
-  const refreshAppts = async () => {
-    try {
-      const user = auth.currentUser;
-      if (!user) return;
-      const token = await user.getIdToken();
-      const API_URL = "https://binu-s-dental-backend.vercel.app";
-      const endpoint = isAdmin ? '/api/v1/medical/all-appointments' : '/api/v1/medical/my-appointments';
-      
-      const response = await fetch(`${API_URL}${endpoint}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await response.json();
-      
-      const appts = data.appointments || [];
+  const refreshAppts = () => {
+    const endpoint = isAdmin ? '/medical/all-appointments' : '/medical/my-appointments';
+    api.get(endpoint).then(res => {
+      const appts = res.data?.appointments || [];
       setAppointments(appts);
+      // Refresh selected appointment if one is selected
       if (selectedAppt) {
         const updated = appts.find((a: Appt) => a._id === selectedAppt._id);
         if (updated) setSelectedAppt(updated);
       }
       setLoading(false);
-    } catch (err) {
-      setLoading(false);
-    }
+    }).catch(() => setLoading(false));
   };
 
   useEffect(() => { if (currentUser) refreshAppts(); }, [currentUser, isAdmin]);
@@ -152,25 +106,13 @@ export default function Portal() {
     } catch (e: any) { toast.error(e.response?.data?.message || t('update_failed')); }
   };
 
-  const deleteReport = async (reportId: string) => {
+  const deleteFile = async (id: string, type: 'scan' | 'report', url: string) => {
     try {
-      await api.delete(`/medical/report/${reportId}`);
+      await api.delete(`/medical/appointments/${id}/files`, { data: { type, url } });
+      toast.success(t('delete_success'));
       refreshAppts();
-      toast.success("Report deleted successfully");
-    } catch (error) {
-      console.error("Delete failed", error);
-      toast.error("Delete failed");
-    }
-  };
-
-  const deleteScan = async (scanId: string) => {
-    try {
-      await api.delete(`/medical/scan/${scanId}`);
-      refreshAppts();
-      toast.success("Scan deleted successfully");
-    } catch (error) {
-      console.error("Delete scan failed", error);
-      toast.error("Delete scan failed");
+    } catch (e: any) {
+      toast.error(e.response?.data?.message || t('update_failed'));
     }
   };
 
@@ -186,11 +128,8 @@ export default function Portal() {
     }
   };
 
-  const getFileUrl = (url: string | undefined | null) => {
-    if (!url) return '';
-    return url.startsWith('http') ? url : `${API_BASE}${url}`;
-  };
-
+  const getFileUrl = (url: string) => url.startsWith('http') ? url : `${API_BASE}${url}`;
+  const isImage = (filename: string) => /\.(jpg|jpeg|png|gif|webp|bmp|tiff)$/i.test(filename);
 
   const todayAppts = appointments.filter(a => a.date === new Date().toISOString().split('T')[0]);
   const thisMonthAppts = appointments.filter(a => a.date?.startsWith(new Date().toISOString().slice(0, 7)));
@@ -224,27 +163,16 @@ export default function Portal() {
             {/* Appointments List */}
             <div className="lg:col-span-2">
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                {isAdmin && (
-                  <div className="p-6 border-b border-gray-100 bg-gray-50/50">
-                    <label className="font-semibold block mb-2 text-gray-700">Select Date</label>
-                    <input
-                      type="date"
-                      value={selectedDate}
-                      onChange={(e) => setSelectedDate(e.target.value)}
-                      className="border rounded-lg p-2 outline-none focus:ring-2 focus:ring-primary focus:border-primary text-gray-700 font-medium bg-white"
-                    />
-                  </div>
-                )}
                 <div className="p-6 border-b border-gray-100 flex items-center justify-between">
                   <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2"><Calendar className="text-primary w-6 h-6" /> {isAdmin ? t('all_appointments') : t('my_appointments')}</h2>
                   <Link to="/booking" className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-hover transition-colors">{t('book_now')}</Link>
                 </div>
                 {loading ? <div className="p-12 text-center text-gray-400">Loading...</div> :
-                (isAdmin ? dailyAppointments : appointments).length === 0 ? (
+                appointments.length === 0 ? (
                   <div className="p-12 text-center text-gray-400"><Calendar className="w-12 h-12 mx-auto mb-3 text-gray-300" /><p>{t('no_appointments')}</p></div>
                 ) : (
                   <div className="divide-y divide-gray-50 max-h-[600px] overflow-y-auto">
-                    {(isAdmin ? dailyAppointments : appointments).map(appt => (
+                    {appointments.map(appt => (
                       <div key={appt._id} onClick={() => setSelectedAppt(appt)} className={`p-4 cursor-pointer hover:bg-blue-50/50 transition-colors ${selectedAppt?._id === appt._id ? 'bg-blue-50 border-l-4 border-primary' : ''}`}>
                         <div className="flex items-center justify-between">
                           <div>
@@ -415,15 +343,6 @@ export default function Portal() {
                     <div>
                       <textarea id="historyField" defaultValue={selectedAppt.medicalHistory} rows={3} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder={t('medical_history') + '...'} />
                       <button onClick={() => updateField(selectedAppt._id, 'medicalHistory', (document.getElementById('historyField') as any)?.value)} className="mt-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg text-xs font-bold w-full transition-all">{t('save_btn')}</button>
-                      
-                      {selectedAppt?._id && (
-                        <InteractiveDentalChart
-                          key={selectedAppt._id}
-                          appointmentId={selectedAppt._id}
-                          existingChart={selectedAppt.dentalChart}
-                          token={token}
-                        />
-                      )}
                     </div>
                   ) : (
                     <div className={`text-sm whitespace-pre-wrap rounded-xl p-4 ${selectedAppt.medicalHistory ? 'bg-green-50 text-green-900 border border-green-200' : 'bg-gray-50 text-gray-400'}`}>
@@ -446,55 +365,46 @@ export default function Portal() {
                       📷 {t('scans_label')}
                     </p>
                     {selectedAppt.scans?.length > 0 ? (
-                      <div className="space-y-4">
-                        {selectedAppt?.scans?.map(
-                          (scan: any, index: number) => {
-                            const isPdf =
-                              scan.url?.toLowerCase().includes(".pdf") ||
-                              scan.resourceType === "raw";
-
-                            return (
-                              <div
-                                key={index}
-                                className="border rounded-lg p-3 flex flex-col items-center bg-white shadow-sm"
-                              >
-                                {isPdf ? (
-                                  <>
-                                    <div className="text-5xl">📄</div>
-
-                                    <a
-                                      href={scan.url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-blue-600 underline mt-2 text-sm text-center"
-                                    >
-                                      Open Scan PDF
-                                    </a>
-                                  </>
-                                ) : (
-                                  <img
-                                    src={scan.url}
-                                    alt="scan"
-                                    className="w-48 h-48 object-cover rounded"
-                                  />
-                                )}
-
-                                <p className="mt-2 text-sm text-gray-500">
-                                  {scan.name || scan.filename || "Scan"}
-                                </p>
-
-                                {isAdmin && scan._id && (
-                                  <button
-                                    onClick={() => deleteScan(scan._id!)}
-                                    className="mt-3 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {selectedAppt.scans.map((s, i) => (
+                          <div key={i} className="relative group">
+                            {isImage(s.filename) ? (
+                              <div className="cursor-pointer relative overflow-hidden rounded-xl border border-gray-200 group-hover:border-primary transition-all">
+                                <div onClick={() => setLightbox({ src: getFileUrl(s.url), alt: s.filename })}>
+                                  <img src={getFileUrl(s.url)} alt={s.filename} className="w-full h-24 object-cover" />
+                                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/35 flex items-center justify-center transition-all">
+                                    <ZoomIn className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-all" />
+                                  </div>
+                                </div>
+                                {isAdmin && (
+                                  <button 
+                                    onClick={(e) => { e.stopPropagation(); deleteFile(selectedAppt._id, 'scan', s.url); }}
+                                    className="absolute top-1.5 right-1.5 p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg active:scale-90 transition-all shadow-md z-10"
+                                    title="Delete File"
                                   >
-                                    Delete Scan
+                                    <Trash2 className="w-3.5 h-3.5" />
                                   </button>
                                 )}
                               </div>
-                            );
-                          }
-                        )}
+                            ) : (
+                              <div className="flex gap-1 items-stretch">
+                                <a href={getFileUrl(s.url)} target="_blank" rel="noreferrer" className="flex-1 block p-3 bg-cyan-50 rounded-xl text-primary text-xs hover:bg-cyan-100 transition break-all">
+                                  📄 {s.filename}
+                                </a>
+                                {isAdmin && (
+                                  <button 
+                                    onClick={() => deleteFile(selectedAppt._id, 'scan', s.url)}
+                                    className="px-3 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl transition flex items-center justify-center"
+                                    title="Delete File"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                            <p className="text-[10px] text-gray-400 mt-1 break-all">{s.filename}</p>
+                          </div>
+                        ))}
                       </div>
                     ) : (
                       <p className="text-xs text-gray-400 italic py-2">{t('no_scans_yet')}</p>
@@ -507,55 +417,46 @@ export default function Portal() {
                       📄 {t('reports_label')}
                     </p>
                     {selectedAppt.reports?.length > 0 ? (
-                      <div className="space-y-4">
-                        {selectedAppt?.reports?.map(
-                          (report: any, index: number) => {
-                            const isPdf =
-                              report.url?.toLowerCase().includes(".pdf") ||
-                              report.resourceType === "raw";
-
-                            return (
-                              <div
-                                key={index}
-                                className="border rounded-lg p-3 flex flex-col items-center bg-white shadow-sm"
-                              >
-                                {isPdf ? (
-                                  <>
-                                    <div className="text-5xl">📄</div>
-
-                                    <a
-                                      href={report.url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-blue-600 underline mt-2 text-sm text-center"
-                                    >
-                                      Open PDF Report
-                                    </a>
-                                  </>
-                                ) : (
-                                  <img
-                                    src={report.url}
-                                    alt="report"
-                                    className="w-48 h-48 object-cover rounded"
-                                  />
-                                )}
-
-                                <p className="mt-2 text-sm text-gray-500">
-                                  {report.name || report.filename || "Report"}
-                                </p>
-
-                                {isAdmin && report._id && (
-                                  <button
-                                    onClick={() => deleteReport(report._id!)}
-                                    className="mt-2 bg-red-600 text-white px-3 py-1 rounded"
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {selectedAppt.reports.map((r, i) => (
+                          <div key={i} className="relative group">
+                            {isImage(r.filename) ? (
+                              <div className="cursor-pointer relative overflow-hidden rounded-xl border border-gray-200 group-hover:border-primary transition-all">
+                                <div onClick={() => setLightbox({ src: getFileUrl(r.url), alt: r.filename })}>
+                                  <img src={getFileUrl(r.url)} alt={r.filename} className="w-full h-24 object-cover" />
+                                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/35 flex items-center justify-center transition-all">
+                                    <ZoomIn className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-all" />
+                                  </div>
+                                </div>
+                                {isAdmin && (
+                                  <button 
+                                    onClick={(e) => { e.stopPropagation(); deleteFile(selectedAppt._id, 'report', r.url); }}
+                                    className="absolute top-1.5 right-1.5 p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg active:scale-90 transition-all shadow-md z-10"
+                                    title="Delete File"
                                   >
-                                    Delete
+                                    <Trash2 className="w-3.5 h-3.5" />
                                   </button>
                                 )}
                               </div>
-                            );
-                          }
-                        )}
+                            ) : (
+                              <div className="flex gap-1 items-stretch">
+                                <a href={getFileUrl(r.url)} target="_blank" rel="noreferrer" className="flex-1 block p-3 bg-amber-50 rounded-xl text-amber-700 text-xs hover:bg-amber-100 transition break-all">
+                                  📄 {r.filename}
+                                </a>
+                                {isAdmin && (
+                                  <button 
+                                    onClick={() => deleteFile(selectedAppt._id, 'report', r.url)}
+                                    className="px-3 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl transition flex items-center justify-center"
+                                    title="Delete File"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                            <p className="text-[10px] text-gray-400 mt-1 break-all">{r.filename}</p>
+                          </div>
+                        ))}
                       </div>
                     ) : (
                       <p className="text-xs text-gray-400 italic py-2">{t('no_reports_yet')}</p>

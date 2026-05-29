@@ -7,7 +7,7 @@ import api from '../lib/api';
 import toast from 'react-hot-toast';
 import InteractiveDentalChart from '../components/InteractiveDentalChart';
 
-const API_BASE = "https://binu-s-dental-backend.vercel.app";
+const API_BASE = import.meta.env.VITE_API_URL || '';
 
 interface FileItem { _id?: string; filename: string; url: string; resourceType?: string; name?: string; }
 interface PhotoItem { filename: string; url: string; caption?: string; }
@@ -52,50 +52,31 @@ export default function Portal() {
 
   useEffect(() => {
     const fetchAppointmentsByDate = async () => {
-      const user = auth.currentUser;
-      if (!user) return;
-      
+      if (!token) return;
       try {
-        const token = await user.getIdToken();
-        const response = await fetch(`https://binu-s-dental-backend.vercel.app/api/v1/medical/appointments/date/${selectedDate}`, {
+        const res = await api.get(`/medical/appointments/date/${selectedDate}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        const data = await response.json();
-        setDailyAppointments(data.appointments || []);
+        setDailyAppointments(res.data.appointments || []);
       } catch (error) {
         console.error(error);
       }
     };
-    if (isAdmin && selectedDate) {
-      fetchAppointmentsByDate();
-    } else if (isAdmin && !selectedDate) {
-      refreshAppts();
-    }
-  }, [selectedDate, isAdmin]);
+    if (isAdmin) fetchAppointmentsByDate();
+  }, [selectedDate, token, isAdmin]);
 
-  const refreshAppts = async () => {
-    try {
-      const user = auth.currentUser;
-      if (!user) return;
-      const token = await user.getIdToken();
-      const API_URL = "https://binu-s-dental-backend.vercel.app";
-      const endpoint = isAdmin ? '/api/v1/medical/all-appointments' : '/api/v1/medical/my-appointments';
-      
-      const response = await fetch(`${API_URL}${endpoint}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await response.json();
-      
-      const appts = data.appointments || [];
+  const refreshAppts = () => {
+    const endpoint = isAdmin ? '/medical/all-appointments' : '/medical/my-appointments';
+    api.get(endpoint).then(res => {
+      const appts = res.data?.appointments || [];
       setAppointments(appts);
+      // Refresh selected appointment if one is selected
       if (selectedAppt) {
         const updated = appts.find((a: Appt) => a._id === selectedAppt._id);
         if (updated) setSelectedAppt(updated);
       }
       setLoading(false);
-    } catch (err) {
-      setLoading(false);
-    }
+    }).catch(() => setLoading(false));
   };
 
   useEffect(() => { if (currentUser) refreshAppts(); }, [currentUser, isAdmin]);
