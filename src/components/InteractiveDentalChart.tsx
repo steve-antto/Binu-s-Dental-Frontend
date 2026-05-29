@@ -139,36 +139,53 @@ export default function InteractiveDentalChart({
     });
   };
 
-  const saveDentalChart =
-    async () => {
-      try {
-        const freshToken = await auth.currentUser?.getIdToken(true);
-        const baseURL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '/api/v1';
-        await axios.put(
-          `${baseURL}/medical/dental-chart/${appointmentId}`,
-          {
+  useEffect(() => {
+    if (!existingChart) return;
+
+    setGender(existingChart.gender || "female");
+    setDentitionType(existingChart.dentitionType || "adult");
+    setBitewing(existingChart.bitewing || false);
+    setViewType(existingChart.viewType || "LM");
+    setSelectedTeeth(existingChart.selectedTeeth || []);
+    setToothConditions(existingChart.toothConditions || {});
+  }, [existingChart]);
+
+  const saveDentalChart = async () => {
+    try {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const token = await user.getIdToken(true);
+      const API_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '';
+
+      const response = await fetch(
+        `${API_URL}/medical/appointments/${appointmentId}/dental-chart`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
             gender,
+            dentitionType,
             bitewing,
             viewType,
             selectedTeeth,
             toothConditions,
-            dentitionType,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${freshToken}`,
-            },
-          }
-        );
+          }),
+        }
+      );
 
-        alert(
-          "Dental Chart Saved"
-        );
+      const data = await response.json();
+      console.log("Saved", data);
+      alert("Dental chart saved");
 
-      } catch (error) {
-        console.error(error);
-      }
-    };
+    } catch (error) {
+      console.error(error);
+      alert("Save failed");
+    }
+  };
 
   return (
     <div className="bg-[#061326] rounded-xl p-5 mt-6">
