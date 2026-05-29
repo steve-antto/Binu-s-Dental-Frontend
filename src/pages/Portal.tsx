@@ -63,7 +63,7 @@ export default function Portal() {
     if (!user) return;
 
     const token = await user.getIdToken(true);
-    const API_URL = import.meta.env.VITE_API_URL;
+    const API_URL = import.meta.env.VITE_API_URL || "https://binu-s-dental-backend.vercel.app";
 
     const response = await fetch(
       `${API_URL}/api/v1/medical/appointments/date/${selectedDate}`,
@@ -228,12 +228,22 @@ export default function Portal() {
                 {isAdmin && (
                   <div className="p-6 border-b border-gray-100 bg-gray-50/50">
                     <label className="font-semibold block mb-2 text-gray-700">Select Date</label>
-                    <input
-                      type="date"
-                      value={selectedDate}
-                      onChange={(e) => setSelectedDate(e.target.value)}
-                      className="border rounded px-3 py-2"
-                    />
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="date"
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                        className="border rounded px-3 py-2"
+                      />
+                      {selectedDate && (
+                        <button 
+                          onClick={() => setSelectedDate("")}
+                          className="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded text-sm font-medium transition-colors"
+                        >
+                          Clear Filter
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )}
                 <div className="p-6 border-b border-gray-100 flex items-center justify-between">
