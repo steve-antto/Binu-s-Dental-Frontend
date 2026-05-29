@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom';
 import { Calendar, User, Settings, FileText, ShieldCheck, Users, BarChart3, CreditCard, ClipboardList, ScanLine, Pill, Upload, X, ZoomIn, Trash2, Camera } from 'lucide-react';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
-import { auth } from '../lib/firebase';
 import InteractiveDentalChart from '../components/InteractiveDentalChart';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
@@ -39,8 +38,8 @@ export default function Portal() {
   const scanFileRef = useRef<HTMLInputElement>(null);
   const reportFileRef = useRef<HTMLInputElement>(null);
   const photoFileRef = useRef<HTMLInputElement>(null);
-  const [, setToken] = useState("");
-  const [selectedDate, setSelectedDate] = useState("");
+  const [token, setToken] = useState("");
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
   const [dailyAppointments, setDailyAppointments] = useState<Appt[]>([]);
   const [medicalHistory, setMedicalHistory] = useState("");
 
@@ -59,11 +58,8 @@ export default function Portal() {
   }, [currentUser]);
 
   const fetchAppointmentsByDate = async () => {
-    const user = auth.currentUser;
-    if (!user) return;
-
-    const token = await user.getIdToken(true);
-    const API_URL = import.meta.env.VITE_API_URL || "https://binu-s-dental-backend.vercel.app";
+    const token = await auth.currentUser?.getIdToken(true);
+    const API_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '';
 
     const response = await fetch(
       `${API_URL}/api/v1/medical/appointments/date/${selectedDate}`,
@@ -75,14 +71,11 @@ export default function Portal() {
     );
 
     const data = await response.json();
-
-    setDailyAppointments(data.appointments || []);
+    setAppointments(data.appointments || []);
   };
 
   useEffect(() => {
-    if (selectedDate) {
-      fetchAppointmentsByDate();
-    }
+    if (isAdmin) fetchAppointmentsByDate();
   }, [selectedDate]);
 
   const refreshAppts = () => {
@@ -228,22 +221,12 @@ export default function Portal() {
                 {isAdmin && (
                   <div className="p-6 border-b border-gray-100 bg-gray-50/50">
                     <label className="font-semibold block mb-2 text-gray-700">Select Date</label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="date"
-                        value={selectedDate}
-                        onChange={(e) => setSelectedDate(e.target.value)}
-                        className="border rounded px-3 py-2"
-                      />
-                      {selectedDate && (
-                        <button 
-                          onClick={() => setSelectedDate("")}
-                          className="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded text-sm font-medium transition-colors"
-                        >
-                          Clear Filter
-                        </button>
-                      )}
-                    </div>
+                    <input
+                      type="date"
+                      value={selectedDate}
+                      onChange={(e) => setSelectedDate(e.target.value)}
+                      className="border rounded-lg p-2 outline-none focus:ring-2 focus:ring-primary focus:border-primary text-gray-700 font-medium bg-white"
+                    />
                   </div>
                 )}
                 <div className="p-6 border-b border-gray-100 flex items-center justify-between">
@@ -251,27 +234,27 @@ export default function Portal() {
                   <Link to="/booking" className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-hover transition-colors">{t('book_now')}</Link>
                 </div>
                 {loading ? <div className="p-12 text-center text-gray-400">Loading...</div> :
-                (selectedDate ? dailyAppointments : appointments).length === 0 ? (
-                  <div className="p-12 text-center text-gray-400"><Calendar className="w-12 h-12 mx-auto mb-3 text-gray-300" /><p>{t('no_appointments')}</p></div>
-                ) : (
-                  <div className="divide-y divide-gray-50 max-h-[600px] overflow-y-auto">
-                    {(selectedDate ? dailyAppointments : appointments).map(appt => (
-                      <div key={appt._id} onClick={() => setSelectedAppt(appt)} className={`p-4 cursor-pointer hover:bg-blue-50/50 transition-colors ${selectedAppt?._id === appt._id ? 'bg-blue-50 border-l-4 border-primary' : ''}`}>
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-bold text-gray-900">{appt.patientName || 'Patient'}</p>
-                            <p className="text-sm text-gray-500">{appt.service} · {appt.date} · {appt.time}</p>
-                            {isAdmin && <p className="text-xs text-gray-400 mt-1">📞 {appt.patientPhone} · ✉️ {appt.patientEmail}</p>}
-                          </div>
-                          <div className="flex flex-col gap-1 items-end">
-                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${statusColor(appt.status)}`}>{t(appt.status) || appt.status}</span>
-                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${payColor(appt.paymentStatus || 'pending')}`}>₹{appt.paymentAmount || 0}</span>
+                  appointments.length === 0 ? (
+                    <div className="p-12 text-center text-gray-400"><Calendar className="w-12 h-12 mx-auto mb-3 text-gray-300" /><p>{t('no_appointments')}</p></div>
+                  ) : (
+                    <div className="divide-y divide-gray-50 max-h-[600px] overflow-y-auto">
+                      {appointments.map(appt => (
+                        <div key={appt._id} onClick={() => setSelectedAppt(appt)} className={`p-4 cursor-pointer hover:bg-blue-50/50 transition-colors ${selectedAppt?._id === appt._id ? 'bg-blue-50 border-l-4 border-primary' : ''}`}>
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-bold text-gray-900">{appt.patientName || 'Patient'}</p>
+                              <p className="text-sm text-gray-500">{appt.service} · {appt.date} · {appt.time}</p>
+                              {isAdmin && <p className="text-xs text-gray-400 mt-1">📞 {appt.patientPhone} · ✉️ {appt.patientEmail}</p>}
+                            </div>
+                            <div className="flex flex-col gap-1 items-end">
+                              <span className={`px-2 py-1 rounded-full text-xs font-bold ${statusColor(appt.status)}`}>{t(appt.status) || appt.status}</span>
+                              <span className={`px-2 py-1 rounded-full text-xs font-bold ${payColor(appt.paymentStatus || 'pending')}`}>₹{appt.paymentAmount || 0}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                      ))}
+                    </div>
+                  )}
               </div>
             </div>
 
@@ -339,7 +322,7 @@ export default function Portal() {
                   {/* Patient Info */}
                   <div>
                     <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                      <ClipboardList className="text-primary w-6 h-6" /> 
+                      <ClipboardList className="text-primary w-6 h-6" />
                       {selectedAppt.patientName} - {selectedAppt.service}
                     </h2>
                     <p className="text-gray-500 mt-1">{selectedAppt.date} · {selectedAppt.time}</p>
@@ -379,44 +362,6 @@ export default function Portal() {
                             <option value="pending">{t('pending')}</option><option value="paid">{t('paid')}</option><option value="partial">{t('partial')}</option>
                           </select>
                           <button onClick={() => updateField(selectedAppt._id, 'payment', { paymentAmount: +(document.getElementById('payAmt') as any)?.value, paymentStatus: (document.getElementById('paySts') as any)?.value })} className="px-3 py-1.5 bg-primary hover:bg-primary/90 text-white rounded-lg text-xs font-bold transition-all">{t('save_btn')}</button>
-                        </div>
-                      </div>
-
-                      {/* Multi-Day Treatment UI */}
-                      <div className="w-full mt-2 pt-3 border-t border-gray-200">
-                        <div className="flex items-center gap-2 mb-3">
-                          <input type="checkbox" id="multiDayToggle" className="w-4 h-4 cursor-pointer" />
-                          <label htmlFor="multiDayToggle" className="text-sm font-bold text-gray-800 cursor-pointer">Multi-Day Treatment</label>
-                        </div>
-                        
-                        <div className="flex flex-wrap gap-4 items-end">
-                          <div>
-                            <label className="text-gray-500 text-xs font-bold block">Treatment Start</label>
-                            <input type="date" className="mt-1 px-3 py-1.5 border rounded-lg text-sm bg-white" />
-                          </div>
-                          
-                          <div>
-                            <label className="text-gray-500 text-xs font-bold block">Treatment End</label>
-                            <input type="date" className="mt-1 px-3 py-1.5 border rounded-lg text-sm bg-white" />
-                          </div>
-                          
-                          <div>
-                            <label className="text-gray-500 text-xs font-bold block">Time Slot</label>
-                            <select className="mt-1 px-3 py-1.5 border rounded-lg text-sm bg-white">
-                              <option>10:00 AM</option>
-                              <option>10:30 AM</option>
-                              <option>11:00 AM</option>
-                              <option>11:30 AM</option>
-                              <option>12:00 PM</option>
-                              <option>04:00 PM</option>
-                              <option>04:30 PM</option>
-                              <option>05:00 PM</option>
-                              <option>05:30 PM</option>
-                              <option>06:00 PM</option>
-                              <option>06:30 PM</option>
-                              <option>07:00 PM</option>
-                            </select>
-                          </div>
                         </div>
                       </div>
                     </div>
@@ -464,7 +409,7 @@ export default function Portal() {
                     <div>
                       <textarea value={medicalHistory} onChange={(e) => setMedicalHistory(e.target.value)} rows={3} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder={t('medical_history') + '...'} />
                       <button onClick={() => updateField(selectedAppt._id, 'medicalHistory', medicalHistory)} className="mt-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg text-xs font-bold w-full transition-all">{t('save_btn')}</button>
-                      
+
                       {selectedAppt?._id && (
                         <InteractiveDentalChart
                           key={selectedAppt._id}
