@@ -23,9 +23,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        setCurrentUser(user);
         try {
-          const token = await user.getIdToken();
+          const token = await user.getIdToken(true); // force refresh
+          localStorage.setItem("token", token);
+          setCurrentUser(user);
           
           // Sync with backend — explicitly pass token in header
           // because auth.currentUser may not be set yet during onAuthStateChanged
@@ -41,10 +42,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
           
         } catch (error) {
-          console.error("Error syncing user:", error);
+          console.error("Token refresh or sync error:", error);
           toast.error("Failed to authenticate with server");
         }
       } else {
+        localStorage.removeItem("token");
         setCurrentUser(null);
         setDbUser(null);
       }
@@ -60,6 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setCurrentUser(null);
       setDbUser(null);
       localStorage.removeItem('firebaseIdToken');
+      localStorage.removeItem('token');
       toast.success("Logged out successfully");
     } catch (error) {
       console.error("Logout error", error);
