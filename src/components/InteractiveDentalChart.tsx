@@ -1,15 +1,15 @@
 import { useState } from "react";
 import axios from "axios";
-import dentalChart from "../assets/dental-arch.jpeg"; // Kept .jpeg from previous turns to avoid broken image
+import dentalChart from "../assets/dental-chart.png"; // Kept .jpeg from previous turns to avoid broken image
 
 const upperTeeth = [
-  "18","17","16","15","14","13","12","11",
-  "21","22","23","24","25","26","27","28"
+  "18", "17", "16", "15", "14", "13", "12", "11",
+  "21", "22", "23", "24", "25", "26", "27", "28"
 ];
 
 const lowerTeeth = [
-  "48","47","46","45","44","43","42","41",
-  "31","32","33","34","35","36","37","38"
+  "48", "47", "46", "45", "44", "43", "42", "41",
+  "31", "32", "33", "34", "35", "36", "37", "38"
 ];
 
 const conditions = [
@@ -123,11 +123,10 @@ export default function InteractiveDentalChart({
           onClick={() =>
             setGender("male")
           }
-          className={`px-4 py-2 rounded font-bold ${
-            gender === "male"
+          className={`px-4 py-2 rounded font-bold ${gender === "male"
               ? "bg-blue-600 text-white"
               : "bg-gray-300 text-gray-800"
-          }`}
+            }`}
         >
           ♂ Male
         </button>
@@ -136,11 +135,10 @@ export default function InteractiveDentalChart({
           onClick={() =>
             setGender("female")
           }
-          className={`px-4 py-2 rounded font-bold ${
-            gender === "female"
+          className={`px-4 py-2 rounded font-bold ${gender === "female"
               ? "bg-pink-600 text-white"
               : "bg-gray-300 text-gray-800"
-          }`}
+            }`}
         >
           ♀ Female
         </button>
@@ -174,13 +172,12 @@ export default function InteractiveDentalChart({
                 font-bold
                 transition-all
 
-                ${
-                  selectedTeeth.includes(
-                    tooth
-                  )
+                ${selectedTeeth.includes(
+                  tooth
+                )
                     ? "bg-cyan-500 text-white scale-110 shadow-lg"
                     : "bg-white/80 hover:bg-cyan-200 text-gray-900"
-                }
+                  }
                 `}
               >
                 {tooth}
@@ -209,13 +206,12 @@ export default function InteractiveDentalChart({
                 font-bold
                 transition-all
 
-                ${
-                  selectedTeeth.includes(
-                    tooth
-                  )
+                ${selectedTeeth.includes(
+                  tooth
+                )
                     ? "bg-cyan-500 text-white scale-110 shadow-lg"
                     : "bg-white/80 hover:bg-cyan-200 text-gray-900"
-                }
+                  }
                 `}
               >
                 {tooth}
@@ -239,7 +235,7 @@ export default function InteractiveDentalChart({
               <select
                 value={
                   toothConditions[
-                    tooth
+                  tooth
                   ] || ""
                 }
                 onChange={(e) =>
