@@ -24,6 +24,7 @@ export default function Booking() {
   const [service, setService] = useState('');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
+  const [endTime, setEndTime] = useState('');
   const [notes, setNotes] = useState('');
 
   // Auto-fill user details when logged in
@@ -84,7 +85,20 @@ export default function Booking() {
     if (isSunday(date)) return toast.error(t('sunday_holiday_alert'));
     setLoading(true);
     try {
-      await api.post('/appointments/public-book', { patientName, phone, email, service, date, time, notes });
+      if (isAdmin && endTime) {
+        const startIndex = slots.findIndex(s => s.time === time);
+        const endIndex = slots.findIndex(s => s.time === endTime);
+        if (startIndex !== -1 && endIndex !== -1 && startIndex <= endIndex) {
+          const slotsToBook = slots.slice(startIndex, endIndex + 1);
+          for (const slot of slotsToBook) {
+            if (!slot.booked) {
+              await api.post('/appointments/public-book', { patientName, phone, email, service, date, time: slot.time, notes });
+            }
+          }
+        }
+      } else {
+        await api.post('/appointments/public-book', { patientName, phone, email, service, date, time, notes });
+      }
       setSuccess(true);
       toast.success(t('booking_success_msg'));
     } catch (error: any) {
@@ -155,7 +169,7 @@ export default function Booking() {
           <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6"><CheckCircle className="w-10 h-10" /></div>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">{t('booking_confirmed')}</h2>
           <p className="text-gray-600 mb-6">{t('booking_success_msg')}</p>
-          <button onClick={() => { setSuccess(false); setPatientName(dbUser?.name || ''); setPhone(dbUser?.phone || ''); setEmail(dbUser?.email || ''); setService(''); setDate(''); setTime(''); setNotes(''); }}
+          <button onClick={() => { setSuccess(false); setPatientName(dbUser?.name || ''); setPhone(dbUser?.phone || ''); setEmail(dbUser?.email || ''); setService(''); setDate(''); setTime(''); setEndTime(''); setNotes(''); }}
             className="px-8 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary-hover transition-colors w-full">{t('book_another')}</button>
         </div>
       </div>
@@ -227,7 +241,7 @@ export default function Booking() {
               <div className="space-y-2">
                 <label className="text-sm font-bold text-gray-700 flex items-center gap-2"><CalendarIcon className="w-4 h-4 text-primary" /> {t('preferred_date')}</label>
                 <input type="date" required min={isAdmin ? undefined : today} value={date}
-                  onChange={(e) => { setDate(e.target.value); setTime(''); if (isSunday(e.target.value)) toast.error(t('sundays_holiday_toast')); }}
+                  onChange={(e) => { setDate(e.target.value); setTime(''); setEndTime(''); if (isSunday(e.target.value)) toast.error(t('sundays_holiday_toast')); }}
                   className={`w-full px-5 py-4 bg-white rounded-2xl border text-lg min-h-[64px] shadow-inner ${date && isSunday(date) ? 'border-red-400 bg-red-50 text-red-500' : 'border-gray-200 text-gray-700'} focus:ring-2 focus:ring-primary outline-none font-bold transition-all`} />
                 {date && isSunday(date) && <p className="text-red-500 text-sm font-medium">🔴 {t('sunday_closed_text')}</p>}
               </div>
@@ -235,24 +249,28 @@ export default function Booking() {
                 <label className="text-sm font-bold text-gray-700 flex items-center gap-2"><Clock className="w-4 h-4 text-primary" /> {t('preferred_time')}</label>
                 {date && !isSunday(date) && slots.length > 0 ? (
                   <div className="grid grid-cols-4 gap-2">
-                    {slots.map((slot: any) => (
-                      <button
-                        type="button"
-                        key={slot.time}
-                        disabled={slot.booked || isTimeSlotPast(slot.time)}
-                        onClick={() => setTime(slot.time)}
-                        className={`p-2 rounded font-medium text-sm transition-all
-                        ${
-                          slot.booked || isTimeSlotPast(slot.time)
-                            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                            : time === slot.time
-                            ? "bg-blue-800 text-white ring-2 ring-blue-500 ring-offset-1"
-                            : "bg-blue-600 text-white hover:bg-blue-700"
-                        }`}
-                      >
-                        {slot.time}
-                      </button>
-                    ))}
+                    {slots.map((slot: any) => {
+                      const isUnavailable = slot.booked || isTimeSlotPast(slot.time);
+                      return (
+                        <button
+                          type="button"
+                          key={slot.time}
+                          disabled={isUnavailable}
+                          onClick={() => { setTime(slot.time); setEndTime(''); }}
+                          className={`p-2 rounded font-medium text-sm transition-all flex flex-col items-center justify-center gap-1
+                          ${
+                            isUnavailable
+                              ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                              : time === slot.time || (endTime && slots.findIndex(s=>s.time===slot.time) > slots.findIndex(s=>s.time===time) && slots.findIndex(s=>s.time===slot.time) <= slots.findIndex(s=>s.time===endTime))
+                              ? "bg-blue-800 text-white ring-2 ring-blue-500 ring-offset-1"
+                              : "bg-blue-600 text-white hover:bg-blue-700"
+                          }`}
+                        >
+                          <span>{slot.time}</span>
+                          {isUnavailable && <span className="text-[10px] opacity-80 leading-none tracking-tight font-bold">❌ unavailable</span>}
+                        </button>
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="w-full px-5 py-4 bg-gray-50 rounded-2xl border border-gray-200 text-gray-500 font-medium min-h-[64px] flex items-center">
@@ -260,6 +278,31 @@ export default function Booking() {
                   </div>
                 )}
                 <input type="text" required value={time} onChange={() => {}} className="sr-only" tabIndex={-1} />
+                
+                {isAdmin && time && (
+                  <div className="mt-4 p-4 bg-blue-50 rounded-2xl border border-blue-100">
+                    <label className="text-sm font-bold text-gray-700 flex items-center gap-2 mb-2">
+                      <Clock className="w-4 h-4 text-primary" /> End Time (Multi-Slot Block)
+                    </label>
+                    <select
+                      value={endTime}
+                      onChange={(e) => setEndTime(e.target.value)}
+                      className="w-full px-4 py-3 bg-white rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary outline-none text-gray-700 font-medium"
+                    >
+                      <option value="">Same as Start Time (1 Slot)</option>
+                      {slots.slice(slots.findIndex(s => s.time === time) + 1).map((slot: any) => (
+                        <option key={slot.time} value={slot.time} disabled={slot.booked}>
+                          {slot.time} {slot.booked ? "❌" : ""}
+                        </option>
+                      ))}
+                    </select>
+                    {endTime && (
+                      <p className="mt-2 text-xs text-blue-700 font-medium">
+                        Will block all slots from {time} to {endTime} inclusive.
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
