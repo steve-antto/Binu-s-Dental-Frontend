@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { Calendar, User, Settings, FileText, ShieldCheck, Users, BarChart3, CreditCard, ClipboardList, ScanLine, Pill, Upload, X, ZoomIn, Trash2, Camera } from 'lucide-react';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
+import { auth } from '../lib/firebase';
 import InteractiveDentalChart from '../components/InteractiveDentalChart';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
@@ -38,9 +39,9 @@ export default function Portal() {
   const scanFileRef = useRef<HTMLInputElement>(null);
   const reportFileRef = useRef<HTMLInputElement>(null);
   const photoFileRef = useRef<HTMLInputElement>(null);
-  const [token, setToken] = useState("");
+  const [, setToken] = useState("");
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
-  const [dailyAppointments, setDailyAppointments] = useState<Appt[]>([]);
+  const [, setDailyAppointments] = useState<Appt[]>([]);
   const [medicalHistory, setMedicalHistory] = useState("");
 
   useEffect(() => {
@@ -613,57 +614,7 @@ export default function Portal() {
                         <Upload className="w-4 h-4" /> {uploading ? '...' : t('upload_report')}
                       </button>
                     </div>
-                  </div>Auto Block Slots
-
-When patient/admin books:
-
-Backend checks:
-
-treatmentSchedule.startDate
-treatmentSchedule.endDate
-
-If:
-
-same time slot occupied
-
-Reject booking.
-
-Logic:
-
-const conflicting =
-await Appointment.findOne({
-
-time: selectedTime,
-
-date: {
-$gte: startDate,
-$lte: endDate,
-},
-
-status: {
-$ne: "cancelled",
-},
-});
-
-If found:
-
-slot unavailable
-Auto Close Booking
-
-If treatment ends:
-
-Example:
-
-End date:
-June 2
-
-Then automatically release slot.
-
-Query only blocks between:
-
-startDate <= date <= endDate
-
-After end date:
+                  </div>
                 )}
               </div>
             </div>
