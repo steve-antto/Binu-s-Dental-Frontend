@@ -2,14 +2,24 @@ import { useState } from "react";
 import axios from "axios";
 import dentalChart from "../assets/dental-chart.png"; // Kept .jpeg from previous turns to avoid broken image
 
-const upperTeeth = [
-  "18", "17", "16", "15", "14", "13", "12", "11",
-  "21", "22", "23", "24", "25", "26", "27", "28"
+const adultUpper = [
+  "1", "2", "3", "4", "5", "6", "7", "8",
+  "9", "10", "11", "12", "13", "14", "15", "16"
 ];
 
-const lowerTeeth = [
-  "48", "47", "46", "45", "44", "43", "42", "41",
-  "31", "32", "33", "34", "35", "36", "37", "38"
+const adultLower = [
+  "32", "31", "30", "29", "28", "27", "26", "25",
+  "24", "23", "22", "21", "20", "19", "18", "17"
+];
+
+const childUpper = [
+  "A", "B", "C", "D", "E",
+  "F", "G", "H", "I", "J"
+];
+
+const childLower = [
+  "T", "S", "R", "Q", "P",
+  "O", "N", "M", "L", "K"
 ];
 
 const conditions = [
@@ -55,6 +65,11 @@ export default function InteractiveDentalChart({
       existingChart?.gender || "female"
     );
 
+  const [dentitionType, setDentitionType] =
+    useState(
+      existingChart?.dentitionType || "adult"
+    );
+
   const toggleTooth = (tooth: string) => {
     if (selectedTeeth.includes(tooth)) {
       setSelectedTeeth(
@@ -92,6 +107,7 @@ export default function InteractiveDentalChart({
             viewType,
             selectedTeeth,
             toothConditions,
+            dentitionType,
           },
           {
             headers: {
@@ -144,6 +160,30 @@ export default function InteractiveDentalChart({
         </button>
       </div>
 
+      <div className="flex gap-3 mb-4">
+        <button
+          onClick={() => setDentitionType("adult")}
+          className={`px-4 py-2 rounded font-bold ${
+            dentitionType === "adult"
+              ? "bg-blue-600 text-white"
+              : "bg-gray-300 text-gray-800"
+          }`}
+        >
+          Adult
+        </button>
+
+        <button
+          onClick={() => setDentitionType("child")}
+          className={`px-4 py-2 rounded font-bold ${
+            dentitionType === "child"
+              ? "bg-green-600 text-white"
+              : "bg-gray-300 text-gray-800"
+          }`}
+        >
+          Child
+        </button>
+      </div>
+
       <div className="relative">
 
         <img
@@ -155,7 +195,7 @@ export default function InteractiveDentalChart({
         {/* Upper Teeth */}
         <div className="absolute top-3 left-0 w-full flex justify-center gap-2">
 
-          {upperTeeth.map(
+          {(dentitionType === "adult" ? adultUpper : childUpper).map(
             (tooth) => (
               <button
                 key={tooth}
@@ -189,7 +229,7 @@ export default function InteractiveDentalChart({
         {/* Lower Teeth */}
         <div className="absolute bottom-5 left-0 w-full flex justify-center gap-2">
 
-          {lowerTeeth.map(
+          {(dentitionType === "adult" ? adultLower : childLower).map(
             (tooth) => (
               <button
                 key={tooth}
