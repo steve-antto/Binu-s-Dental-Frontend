@@ -1,174 +1,351 @@
 import { useState } from "react";
-import dentalImage from "../assets/dental-arch.jpeg";
 import axios from "axios";
+import dentalChart from "../assets/dental-arch.jpeg"; // Kept .jpeg from previous turns to avoid broken image
 
-type Props = {
-  appointmentId: string;
-  existingChart?: any;
-  token: string;
-};
+const upperTeeth = [
+  "18","17","16","15","14","13","12","11",
+  "21","22","23","24","25","26","27","28"
+];
 
-const toothMap = [
-  { id: "18", left: "5%", top: "8%" },
-  { id: "17", left: "11%", top: "7%" },
-  { id: "16", left: "17%", top: "8%" },
-  { id: "15", left: "23%", top: "10%" },
-  { id: "14", left: "29%", top: "11%" },
-  { id: "13", left: "35%", top: "12%" },
-  { id: "12", left: "41%", top: "12%" },
-  { id: "11", left: "47%", top: "11%" },
+const lowerTeeth = [
+  "48","47","46","45","44","43","42","41",
+  "31","32","33","34","35","36","37","38"
+];
 
-  { id: "21", left: "53%", top: "11%" },
-  { id: "22", left: "59%", top: "12%" },
-  { id: "23", left: "65%", top: "12%" },
-  { id: "24", left: "71%", top: "11%" },
-  { id: "25", left: "77%", top: "10%" },
-  { id: "26", left: "83%", top: "8%" },
-  { id: "27", left: "89%", top: "7%" },
-  { id: "28", left: "95%", top: "8%" },
-
-  { id: "48", left: "5%", top: "67%" },
-  { id: "47", left: "11%", top: "68%" },
-  { id: "46", left: "17%", top: "69%" },
-  { id: "45", left: "23%", top: "71%" },
-  { id: "44", left: "29%", top: "72%" },
-  { id: "43", left: "35%", top: "73%" },
-  { id: "42", left: "41%", top: "73%" },
-  { id: "41", left: "47%", top: "72%" },
-
-  { id: "31", left: "53%", top: "72%" },
-  { id: "32", left: "59%", top: "73%" },
-  { id: "33", left: "65%", top: "73%" },
-  { id: "34", left: "71%", top: "72%" },
-  { id: "35", left: "77%", top: "71%" },
-  { id: "36", left: "83%", top: "69%" },
-  { id: "37", left: "89%", top: "68%" },
-  { id: "38", left: "95%", top: "67%" },
+const conditions = [
+  "Healthy",
+  "RCT",
+  "Filling",
+  "Missing",
+  "Cavity",
+  "Crown",
+  "Extraction",
+  "Implant",
+  "Fracture",
 ];
 
 export default function InteractiveDentalChart({
   appointmentId,
   existingChart,
   token,
-}: Props) {
+}: any) {
 
   const [selectedTeeth, setSelectedTeeth] =
     useState<string[]>(
       existingChart?.selectedTeeth || []
     );
 
-  const [conditions, setConditions] =
-    useState(
+  const [toothConditions, setToothConditions] =
+    useState<any>(
       existingChart?.toothConditions || {}
     );
 
-  const toggleTooth = (
-    tooth: string
-  ) => {
-    setSelectedTeeth((prev) =>
-      prev.includes(tooth)
-        ? prev.filter(
-            (t) => t !== tooth
-          )
-        : [...prev, tooth]
+  const [bitewing, setBitewing] =
+    useState(
+      existingChart?.bitewing || false
     );
+
+  const [viewType, setViewType] =
+    useState(
+      existingChart?.viewType || "LM"
+    );
+
+  const [gender, setGender] =
+    useState(
+      existingChart?.gender || "female"
+    );
+
+  const toggleTooth = (tooth: string) => {
+    if (selectedTeeth.includes(tooth)) {
+      setSelectedTeeth(
+        selectedTeeth.filter(
+          (t) => t !== tooth
+        )
+      );
+    } else {
+      setSelectedTeeth([
+        ...selectedTeeth,
+        tooth,
+      ]);
+    }
+  };
+
+  const updateCondition = (
+    tooth: string,
+    value: string
+  ) => {
+    setToothConditions({
+      ...toothConditions,
+      [tooth]: value,
+    });
   };
 
   const saveDentalChart =
     async () => {
       try {
-
+        const baseURL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '/api/v1';
         await axios.put(
-          `${import.meta.env.VITE_API_URL || ''}/api/v1/medical/dental-chart/${appointmentId}`,
+          `${baseURL}/medical/dental-chart/${appointmentId}`,
           {
+            gender,
+            bitewing,
+            viewType,
             selectedTeeth,
-            toothConditions: conditions,
+            toothConditions,
           },
           {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization:
+                `Bearer ${token}`,
             },
           }
         );
 
-        alert("Dental chart saved");
+        alert(
+          "Dental Chart Saved"
+        );
 
-      } catch (err) {
-        console.error(err);
+      } catch (error) {
+        console.error(error);
       }
     };
 
   return (
-    <div className="mt-6 border rounded-2xl p-5">
+    <div className="bg-[#061326] rounded-xl p-5 mt-6">
 
-      <h2 className="font-bold text-xl mb-4">
+      <h2 className="text-white text-xl mb-5 font-bold">
         Interactive Dental Chart
       </h2>
 
-      <div className="relative w-full max-w-5xl mx-auto">
-        <img
-          src={dentalImage}
-          alt="Dental Chart"
-          className="w-full max-h-[600px] object-contain"
-        />
-        {toothMap.map((tooth) => (
-          <button
-            key={tooth.id}
-            onClick={() => toggleTooth(tooth.id)}
-            className={`absolute w-9 h-9 rounded-full border font-bold text-xs transition-all duration-300 ${
-              selectedTeeth.includes(tooth.id)
-                ? "bg-cyan-500 text-white scale-110 shadow-lg"
-                : "bg-white/70 hover:bg-cyan-200"
-            }`}
-            style={{
-              left: tooth.left,
-              top: tooth.top,
-              transform: "translate(-50%, -50%)"
-            }}
-          >
-            {tooth.id}
-          </button>
-        ))}
+      <div className="flex gap-3 mb-4">
+
+        <button
+          onClick={() =>
+            setGender("male")
+          }
+          className={`px-4 py-2 rounded font-bold ${
+            gender === "male"
+              ? "bg-blue-600 text-white"
+              : "bg-gray-300 text-gray-800"
+          }`}
+        >
+          ♂ Male
+        </button>
+
+        <button
+          onClick={() =>
+            setGender("female")
+          }
+          className={`px-4 py-2 rounded font-bold ${
+            gender === "female"
+              ? "bg-pink-600 text-white"
+              : "bg-gray-300 text-gray-800"
+          }`}
+        >
+          ♀ Female
+        </button>
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-4">
+      <div className="relative">
+
+        <img
+          src={dentalChart}
+          alt="Dental Chart"
+          className="w-full rounded"
+        />
+
+        {/* Upper Teeth */}
+        <div className="absolute top-3 left-0 w-full flex justify-center gap-2">
+
+          {upperTeeth.map(
+            (tooth) => (
+              <button
+                key={tooth}
+                onClick={() =>
+                  toggleTooth(
+                    tooth
+                  )
+                }
+                className={`
+                w-10
+                h-10
+                rounded-full
+                text-xs
+                font-bold
+                transition-all
+
+                ${
+                  selectedTeeth.includes(
+                    tooth
+                  )
+                    ? "bg-cyan-500 text-white scale-110 shadow-lg"
+                    : "bg-white/80 hover:bg-cyan-200 text-gray-900"
+                }
+                `}
+              >
+                {tooth}
+              </button>
+            )
+          )}
+        </div>
+
+        {/* Lower Teeth */}
+        <div className="absolute bottom-5 left-0 w-full flex justify-center gap-2">
+
+          {lowerTeeth.map(
+            (tooth) => (
+              <button
+                key={tooth}
+                onClick={() =>
+                  toggleTooth(
+                    tooth
+                  )
+                }
+                className={`
+                w-10
+                h-10
+                rounded-full
+                text-xs
+                font-bold
+                transition-all
+
+                ${
+                  selectedTeeth.includes(
+                    tooth
+                  )
+                    ? "bg-cyan-500 text-white scale-110 shadow-lg"
+                    : "bg-white/80 hover:bg-cyan-200 text-gray-900"
+                }
+                `}
+              >
+                {tooth}
+              </button>
+            )
+          )}
+        </div>
+      </div>
+
+      {/* Conditions */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-5">
 
         {selectedTeeth.map(
           (tooth) => (
+            <div key={tooth}>
 
-<div key={tooth}>
+              <p className="text-white text-sm mb-1 font-semibold">
+                Tooth {tooth}
+              </p>
 
-<label>
-Tooth {tooth}
-</label>
+              <select
+                value={
+                  toothConditions[
+                    tooth
+                  ] || ""
+                }
+                onChange={(e) =>
+                  updateCondition(
+                    tooth,
+                    e.target.value
+                  )
+                }
+                className="w-full p-2 rounded text-gray-900 font-medium"
+              >
+                <option value="">
+                  Select Condition
+                </option>
 
-<select
-className="border rounded w-full p-2"
-onChange={(e)=>
-setConditions({
-...conditions,
-[tooth]: e.target.value,
-})
-}
->
+                {conditions.map(
+                  (
+                    condition
+                  ) => (
+                    <option
+                      key={
+                        condition
+                      }
+                    >
+                      {
+                        condition
+                      }
+                    </option>
+                  )
+                )}
+              </select>
+            </div>
+          )
+        )}
+      </div>
 
-<option>Healthy</option>
-<option>Cavity</option>
-<option>Root Canal</option>
-<option>Crown</option>
-<option>Extraction</option>
-<option>Filling</option>
-<option>Missing</option>
+      <div className="mt-5 text-white">
 
-</select>
+        <label className="flex items-center cursor-pointer">
 
-</div>
-))}
+          <input
+            type="checkbox"
+            checked={bitewing}
+            onChange={() =>
+              setBitewing(
+                !bitewing
+              )
+            }
+            className="w-5 h-5 rounded"
+          />
+
+          <span className="ml-2 font-medium">
+            Bitewing Selection
+          </span>
+
+        </label>
+      </div>
+
+      <div className="flex gap-5 mt-5 text-white flex-wrap">
+
+        {[
+          "LM",
+          "RM",
+          "RMP",
+          "LMP",
+          "LP",
+          "RP",
+        ].map((view) => (
+
+          <label key={view} className="flex items-center cursor-pointer">
+
+            <input
+              type="radio"
+              checked={
+                viewType === view
+              }
+              onChange={() =>
+                setViewType(
+                  view
+                )
+              }
+              className="w-4 h-4"
+            />
+
+            <span className="ml-2 font-medium">
+              {view}
+            </span>
+
+          </label>
+        ))}
       </div>
 
       <button
-        onClick={saveDentalChart}
-        className="mt-5 bg-blue-600 text-white px-5 py-3 rounded-xl"
+        onClick={
+          saveDentalChart
+        }
+        className="
+        bg-blue-600
+        hover:bg-blue-500
+        transition-colors
+        text-white
+        px-6
+        py-3
+        rounded-lg
+        mt-6
+        font-bold
+        "
       >
         Save Dental Chart
       </button>
