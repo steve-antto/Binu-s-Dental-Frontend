@@ -40,7 +40,7 @@ export default function Portal() {
   const reportFileRef = useRef<HTMLInputElement>(null);
   const photoFileRef = useRef<HTMLInputElement>(null);
   const [, setToken] = useState("");
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
+  const [selectedDate, setSelectedDate] = useState("");
   const [medicalHistory, setMedicalHistory] = useState("");
 
   useEffect(() => {
@@ -75,7 +75,11 @@ export default function Portal() {
   };
 
   useEffect(() => {
-    if (isAdmin) fetchAppointmentsByDate();
+    if (selectedDate && isAdmin) {
+      fetchAppointmentsByDate();
+    } else if (!selectedDate && isAdmin) {
+      refreshAppts();
+    }
   }, [selectedDate]);
 
   const refreshAppts = () => {
