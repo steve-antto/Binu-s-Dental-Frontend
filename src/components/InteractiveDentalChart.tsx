@@ -163,6 +163,15 @@ export default function InteractiveDentalChart({
 
       const token = await user.getIdToken(true);
 
+      console.log({
+        gender,
+        dentitionType,
+        bitewing,
+        viewType,
+        selectedTeeth,
+        toothConditions,
+      });
+
       const response = await fetch(
         `https://binu-s-dental-backend.vercel.app/api/v1/medical/appointments/${appointmentId}/dental-chart`,
         {
