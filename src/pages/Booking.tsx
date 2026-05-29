@@ -11,6 +11,7 @@ import { useAuth } from '../contexts/AuthContext';
 export default function Booking() {
   const { t } = useTranslation();
   const { currentUser, dbUser, loading: authLoading } = useAuth();
+  const isAdmin = dbUser?.role === 'admin' || dbUser?.role === 'doctor';
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [slots, setSlots] = useState<any[]>([]);
@@ -65,6 +66,7 @@ export default function Booking() {
   const today = getLocalDateString();
 
   const isTimeSlotPast = (slotStr: string) => {
+    if (isAdmin) return false;
     if (date !== today) return false;
     const [timeStr, period] = slotStr.split(' ');
     let [hours, minutes] = timeStr.split(':').map(Number);
@@ -224,7 +226,7 @@ export default function Booking() {
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-sm font-bold text-gray-700 flex items-center gap-2"><CalendarIcon className="w-4 h-4 text-primary" /> {t('preferred_date')}</label>
-                <input type="date" required min={today} value={date}
+                <input type="date" required min={isAdmin ? undefined : today} value={date}
                   onChange={(e) => { setDate(e.target.value); setTime(''); if (isSunday(e.target.value)) toast.error(t('sundays_holiday_toast')); }}
                   className={`w-full px-5 py-4 bg-white rounded-2xl border text-lg min-h-[64px] shadow-inner ${date && isSunday(date) ? 'border-red-400 bg-red-50 text-red-500' : 'border-gray-200 text-gray-700'} focus:ring-2 focus:ring-primary outline-none font-bold transition-all`} />
                 {date && isSunday(date) && <p className="text-red-500 text-sm font-medium">🔴 {t('sunday_closed_text')}</p>}
