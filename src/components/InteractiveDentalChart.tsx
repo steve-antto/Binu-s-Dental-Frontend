@@ -153,21 +153,16 @@ export default function InteractiveDentalChart({
   const saveDentalChart = async () => {
     try {
       const user = auth.currentUser;
+
       if (!user) {
-        alert("User not logged in");
+        alert("Login required");
         return;
       }
 
       const token = await user.getIdToken(true);
-      const API_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '/api/v1';
-
-      console.log(
-        "Saving to:",
-        `${API_URL}/api/v1/medical/appointments/${appointmentId}/dental-chart`
-      );
 
       const response = await fetch(
-        `${API_URL}/api/v1/medical/appointments/${appointmentId}/dental-chart`,
+        `https://binu-s-dental-backend.vercel.app/api/v1/medical/appointments/${appointmentId}/dental-chart`,
         {
           method: "PUT",
           headers: {
@@ -185,20 +180,19 @@ export default function InteractiveDentalChart({
         }
       );
 
-      console.log("Status:", response.status);
+      const data = await response.json();
 
-      const text = await response.text();
-      console.log("Response:", text);
+      console.log(data);
 
       if (!response.ok) {
-        alert(`Save failed: ${response.status}`);
+        alert(data.message || "Save failed");
         return;
       }
 
       alert("Dental chart saved");
 
     } catch (error) {
-      console.error("Dental save error:", error);
+      console.error(error);
       alert("Backend connection failed");
     }
   };
