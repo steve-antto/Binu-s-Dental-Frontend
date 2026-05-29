@@ -15,20 +15,20 @@ export default function AdminPortal() {
   const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
-    const getFreshToken = async () => {
+    const initializeAdmin = async () => {
       try {
-        if (currentUser) {
-          const freshToken = await currentUser.getIdToken(true);
-          setToken(freshToken);
-        }
+        if (!currentUser) return;
+
+        const freshToken = await currentUser.getIdToken(true);
+        setToken(freshToken);
       } catch (error) {
-        console.error("Token refresh failed:", error);
+        console.error("Admin init error:", error);
       } finally {
         setAuthLoading(false);
       }
     };
 
-    getFreshToken();
+    initializeAdmin();
   }, [currentUser]);
 
   useEffect(() => {
@@ -54,6 +54,9 @@ export default function AdminPortal() {
         <h2>Loading Admin Portal...</h2>
       </div>
     );
+  }
+  if (!currentUser || !token) {
+    return null;
   }
 
   return (

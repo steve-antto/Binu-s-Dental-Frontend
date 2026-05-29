@@ -29,7 +29,9 @@ export default function AdminLogin() {
       });
       if (response.data.user.role === 'admin' || response.data.user.role === 'doctor') {
          toast.success("Admin access granted.");
-         navigate('/admin/portal');
+         const token = await userCredential.user.getIdToken(true);
+         localStorage.setItem("token", token);
+         navigate('/admin/portal', { replace: true });
       } else {
          await signOut(auth);
          localStorage.removeItem('firebaseIdToken');
