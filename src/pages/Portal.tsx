@@ -39,6 +39,8 @@ export default function Portal() {
   const reportFileRef = useRef<HTMLInputElement>(null);
   const photoFileRef = useRef<HTMLInputElement>(null);
   const [token, setToken] = useState("");
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
+  const [dailyAppointments, setDailyAppointments] = useState<Appt[]>([]);
 
   useEffect(() => {
     if (currentUser && typeof currentUser.getIdToken === 'function') {
@@ -47,6 +49,21 @@ export default function Portal() {
       setToken(localStorage.getItem('token') || '');
     }
   }, [currentUser]);
+
+  useEffect(() => {
+    const fetchAppointmentsByDate = async () => {
+      if (!token) return;
+      try {
+        const res = await api.get(`/medical/appointments/date/${selectedDate}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setDailyAppointments(res.data.appointments || []);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    if (isAdmin) fetchAppointmentsByDate();
+  }, [selectedDate, token, isAdmin]);
 
   const refreshAppts = () => {
     const endpoint = isAdmin ? '/medical/all-appointments' : '/medical/my-appointments';
@@ -188,16 +205,27 @@ export default function Portal() {
             {/* Appointments List */}
             <div className="lg:col-span-2">
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                {isAdmin && (
+                  <div className="p-6 border-b border-gray-100 bg-gray-50/50">
+                    <label className="font-semibold block mb-2 text-gray-700">Select Date</label>
+                    <input
+                      type="date"
+                      value={selectedDate}
+                      onChange={(e) => setSelectedDate(e.target.value)}
+                      className="border rounded-lg p-2 outline-none focus:ring-2 focus:ring-primary focus:border-primary text-gray-700 font-medium bg-white"
+                    />
+                  </div>
+                )}
                 <div className="p-6 border-b border-gray-100 flex items-center justify-between">
                   <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2"><Calendar className="text-primary w-6 h-6" /> {isAdmin ? t('all_appointments') : t('my_appointments')}</h2>
                   <Link to="/booking" className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-hover transition-colors">{t('book_now')}</Link>
                 </div>
                 {loading ? <div className="p-12 text-center text-gray-400">Loading...</div> :
-                appointments.length === 0 ? (
+                (isAdmin ? dailyAppointments : appointments).length === 0 ? (
                   <div className="p-12 text-center text-gray-400"><Calendar className="w-12 h-12 mx-auto mb-3 text-gray-300" /><p>{t('no_appointments')}</p></div>
                 ) : (
                   <div className="divide-y divide-gray-50 max-h-[600px] overflow-y-auto">
-                    {appointments.map(appt => (
+                    {(isAdmin ? dailyAppointments : appointments).map(appt => (
                       <div key={appt._id} onClick={() => setSelectedAppt(appt)} className={`p-4 cursor-pointer hover:bg-blue-50/50 transition-colors ${selectedAppt?._id === appt._id ? 'bg-blue-50 border-l-4 border-primary' : ''}`}>
                         <div className="flex items-center justify-between">
                           <div>
@@ -371,6 +399,7 @@ export default function Portal() {
                       
                       {selectedAppt?._id && (
                         <DentalChart
+                          key={selectedAppt._id}
                           appointmentId={selectedAppt._id}
                           existingChart={selectedAppt.dentalChart}
                           token={token}
