@@ -75,6 +75,11 @@ export default function Portal() {
         const updated = appts.find((a: Appt) => a._id === selectedAppt._id);
         if (updated) setSelectedAppt(updated);
       }
+      
+      if (isAdmin && selectedDate) {
+        api.get(`/medical/appointments/date/${selectedDate}`).then(r => setDailyAppointments(r.data.appointments || [])).catch(() => {});
+      }
+      
       setLoading(false);
     }).catch(() => setLoading(false));
   };
@@ -344,8 +349,8 @@ export default function Portal() {
                       <div>
                         <label className="text-gray-500 text-xs font-bold block">{t('payment_lbl')} (₹)</label>
                         <div className="flex gap-2 mt-1">
-                          <input type="number" defaultValue={selectedAppt.paymentAmount} id="payAmt" className="w-24 px-3 py-1.5 border rounded-lg text-sm bg-white" />
-                          <select defaultValue={selectedAppt.paymentStatus || 'pending'} id="paySts" className="px-2 py-1.5 border rounded-lg text-sm bg-white">
+                          <input key={`payAmt-${selectedAppt._id}`} type="number" defaultValue={selectedAppt.paymentAmount} id="payAmt" className="w-24 px-3 py-1.5 border rounded-lg text-sm bg-white" />
+                          <select key={`paySts-${selectedAppt._id}`} defaultValue={selectedAppt.paymentStatus || 'pending'} id="paySts" className="px-2 py-1.5 border rounded-lg text-sm bg-white">
                             <option value="pending">{t('pending')}</option><option value="paid">{t('paid')}</option><option value="partial">{t('partial')}</option>
                           </select>
                           <button onClick={() => updateField(selectedAppt._id, 'payment', { paymentAmount: +(document.getElementById('payAmt') as any)?.value, paymentStatus: (document.getElementById('paySts') as any)?.value })} className="px-3 py-1.5 bg-primary hover:bg-primary/90 text-white rounded-lg text-xs font-bold transition-all">{t('save_btn')}</button>
@@ -379,7 +384,7 @@ export default function Portal() {
                   <h3 className="font-bold text-gray-900 text-lg mb-3 flex items-center gap-2"><Pill className="w-5 h-5 text-primary" /> {t('prescription')}</h3>
                   {isAdmin ? (
                     <div>
-                      <textarea id="rxField" defaultValue={selectedAppt.prescription} rows={3} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder={t('prescription') + '...'} />
+                      <textarea key={`rx-${selectedAppt._id}`} id="rxField" defaultValue={selectedAppt.prescription} rows={3} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder={t('prescription') + '...'} />
                       <button onClick={() => updateField(selectedAppt._id, 'prescription', (document.getElementById('rxField') as any)?.value)} className="mt-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg text-xs font-bold w-full transition-all">{t('save_prescription')}</button>
                     </div>
                   ) : (
@@ -394,7 +399,7 @@ export default function Portal() {
                   <h3 className="font-bold text-gray-900 text-lg mb-3 flex items-center gap-2"><FileText className="w-5 h-5 text-primary" /> {t('medical_history')}</h3>
                   {isAdmin ? (
                     <div>
-                      <textarea id="historyField" defaultValue={selectedAppt.medicalHistory} rows={3} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder={t('medical_history') + '...'} />
+                      <textarea key={`history-${selectedAppt._id}`} id="historyField" defaultValue={selectedAppt.medicalHistory} rows={3} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder={t('medical_history') + '...'} />
                       <button onClick={() => updateField(selectedAppt._id, 'medicalHistory', (document.getElementById('historyField') as any)?.value)} className="mt-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg text-xs font-bold w-full transition-all">{t('save_btn')}</button>
                       
                       {selectedAppt?._id && (
