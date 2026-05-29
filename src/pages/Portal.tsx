@@ -613,7 +613,57 @@ export default function Portal() {
                         <Upload className="w-4 h-4" /> {uploading ? '...' : t('upload_report')}
                       </button>
                     </div>
-                  </div>
+                  </div>Auto Block Slots
+
+When patient/admin books:
+
+Backend checks:
+
+treatmentSchedule.startDate
+treatmentSchedule.endDate
+
+If:
+
+same time slot occupied
+
+Reject booking.
+
+Logic:
+
+const conflicting =
+await Appointment.findOne({
+
+time: selectedTime,
+
+date: {
+$gte: startDate,
+$lte: endDate,
+},
+
+status: {
+$ne: "cancelled",
+},
+});
+
+If found:
+
+slot unavailable
+Auto Close Booking
+
+If treatment ends:
+
+Example:
+
+End date:
+June 2
+
+Then automatically release slot.
+
+Query only blocks between:
+
+startDate <= date <= endDate
+
+After end date:
                 )}
               </div>
             </div>
