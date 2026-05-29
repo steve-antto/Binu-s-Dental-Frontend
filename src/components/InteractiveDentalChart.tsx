@@ -1,5 +1,5 @@
 import { useState } from "react";
-const dentalImage = "/dental-arch.jpeg";
+import dentalImage from "../assets/dental-arch.jpeg";
 import axios from "axios";
 
 type Props = {
@@ -105,28 +105,25 @@ export default function InteractiveDentalChart({
         Interactive Dental Chart
       </h2>
 
-      <div className="relative w-full max-w-4xl mx-auto">
-
+      <div className="relative w-full max-w-5xl mx-auto">
         <img
           src={dentalImage}
-          className="w-full"
+          alt="Dental Chart"
+          className="w-full max-h-[600px] object-contain"
         />
-
         {toothMap.map((tooth) => (
-
           <button
             key={tooth.id}
-            onClick={() =>
-              toggleTooth(tooth.id)
-            }
-            className={`absolute w-10 h-10 rounded-full border-2 transition-all duration-300 font-bold ${
+            onClick={() => toggleTooth(tooth.id)}
+            className={`absolute w-9 h-9 rounded-full border font-bold text-xs transition-all duration-300 ${
               selectedTeeth.includes(tooth.id)
-                ? 'bg-cyan-500 text-white shadow-lg scale-110'
-                : 'bg-white/20 hover:bg-cyan-400'
+                ? "bg-cyan-500 text-white scale-110 shadow-lg"
+                : "bg-white/70 hover:bg-cyan-200"
             }`}
             style={{
               left: tooth.left,
               top: tooth.top,
+              transform: "translate(-50%, -50%)"
             }}
           >
             {tooth.id}
