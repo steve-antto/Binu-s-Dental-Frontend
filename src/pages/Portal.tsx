@@ -5,12 +5,13 @@ import { Link } from 'react-router-dom';
 import { Calendar, User, Settings, FileText, ShieldCheck, Users, BarChart3, CreditCard, ClipboardList, ScanLine, Pill, Upload, X, ZoomIn, Trash2, Camera } from 'lucide-react';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
+import DentalChart from '../components/DentalChart';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
 interface FileItem { _id?: string; filename: string; url: string; resourceType?: string; name?: string; }
 interface PhotoItem { filename: string; url: string; caption?: string; }
-interface Appt { _id: string; patientName: string; patientPhone: string; patientEmail: string; date: string; time: string; service: string; status: string; paymentStatus: string; paymentAmount: number; prescription: string; medicalHistory: string; notes: string; scans: FileItem[]; reports: FileItem[]; photos: PhotoItem[]; }
+interface Appt { _id: string; patientName: string; patientPhone: string; patientEmail: string; date: string; time: string; service: string; status: string; paymentStatus: string; paymentAmount: number; prescription: string; medicalHistory: string; notes: string; scans: FileItem[]; reports: FileItem[]; photos: PhotoItem[]; dentalChart?: any; }
 
 // Lightbox component for enlarging images
 function Lightbox({ src, alt, onClose }: { src: string; alt: string; onClose: () => void }) {
@@ -37,6 +38,15 @@ export default function Portal() {
   const scanFileRef = useRef<HTMLInputElement>(null);
   const reportFileRef = useRef<HTMLInputElement>(null);
   const photoFileRef = useRef<HTMLInputElement>(null);
+  const [token, setToken] = useState("");
+
+  useEffect(() => {
+    if (currentUser && typeof currentUser.getIdToken === 'function') {
+      currentUser.getIdToken().then(setToken);
+    } else {
+      setToken(localStorage.getItem('token') || '');
+    }
+  }, [currentUser]);
 
   const refreshAppts = () => {
     const endpoint = isAdmin ? '/medical/all-appointments' : '/medical/my-appointments';
@@ -358,6 +368,14 @@ export default function Portal() {
                     <div>
                       <textarea id="historyField" defaultValue={selectedAppt.medicalHistory} rows={3} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder={t('medical_history') + '...'} />
                       <button onClick={() => updateField(selectedAppt._id, 'medicalHistory', (document.getElementById('historyField') as any)?.value)} className="mt-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg text-xs font-bold w-full transition-all">{t('save_btn')}</button>
+                      
+                      {selectedAppt?._id && (
+                        <DentalChart
+                          appointmentId={selectedAppt._id}
+                          existingChart={selectedAppt.dentalChart}
+                          token={token}
+                        />
+                      )}
                     </div>
                   ) : (
                     <div className={`text-sm whitespace-pre-wrap rounded-xl p-4 ${selectedAppt.medicalHistory ? 'bg-green-50 text-green-900 border border-green-200' : 'bg-gray-50 text-gray-400'}`}>

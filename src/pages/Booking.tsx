@@ -6,15 +6,14 @@ import toast from 'react-hot-toast';
 import api from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
 
-const MORNING_SLOTS = ['09:00 AM','09:30 AM','10:00 AM','10:30 AM','11:00 AM','11:30 AM','12:00 PM','12:30 PM'];
-const EVENING_SLOTS = ['05:30 PM','06:00 PM','06:30 PM','07:00 PM','07:30 PM','08:00 PM'];
+
 
 export default function Booking() {
   const { t } = useTranslation();
   const { currentUser, dbUser, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [bookedSlots, setBookedSlots] = useState<string[]>([]);
+  const [slots, setSlots] = useState<any[]>([]);
 
   const [patientName, setPatientName] = useState('');
   const [phone, setPhone] = useState('');
@@ -35,12 +34,12 @@ export default function Booking() {
     }
   }, [dbUser, currentUser]);
 
-  // Fetch booked slots when date changes
+  // Fetch slots when date changes
   useEffect(() => {
     if (!date) return;
-    api.get(`/appointments/booked-slots?date=${date}`)
-      .then(res => setBookedSlots(res.data?.bookedSlots || []))
-      .catch(() => setBookedSlots([]));
+    api.get(`/schedule/slots/${date}`)
+      .then((res) => setSlots(res.data))
+      .catch(() => setSlots([]));
   }, [date]);
 
   const validatePhone = (val: string) => {
@@ -232,16 +231,33 @@ export default function Booking() {
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-bold text-gray-700 flex items-center gap-2"><Clock className="w-4 h-4 text-primary" /> {t('preferred_time')}</label>
-                <select required value={time} onChange={(e) => setTime(e.target.value)} disabled={!date || isSunday(date)}
-                  className="w-full px-5 py-4 bg-white rounded-2xl border border-gray-200 focus:ring-2 focus:ring-primary outline-none text-gray-700 font-bold text-lg min-h-[64px] shadow-inner disabled:opacity-50 transition-all">
-                  <option value="">{t('select_time')}</option>
-                  <optgroup label={t('morning_slot')}>
-                    {MORNING_SLOTS.map(s => <option key={s} value={s} disabled={bookedSlots.includes(s) || isTimeSlotPast(s)}>{s}{(bookedSlots.includes(s) || isTimeSlotPast(s)) ? ' — ' + (bookedSlots.includes(s) ? t('booked_label') : 'Unavailable') : ''}</option>)}
-                  </optgroup>
-                  <optgroup label={t('evening_slot')}>
-                    {EVENING_SLOTS.map(s => <option key={s} value={s} disabled={bookedSlots.includes(s) || isTimeSlotPast(s)}>{s}{(bookedSlots.includes(s) || isTimeSlotPast(s)) ? ' — ' + (bookedSlots.includes(s) ? t('booked_label') : 'Unavailable') : ''}</option>)}
-                  </optgroup>
-                </select>
+                {date && !isSunday(date) && slots.length > 0 ? (
+                  <div className="grid grid-cols-4 gap-2">
+                    {slots.map((slot: any) => (
+                      <button
+                        type="button"
+                        key={slot.time}
+                        disabled={slot.booked || isTimeSlotPast(slot.time)}
+                        onClick={() => setTime(slot.time)}
+                        className={`p-2 rounded font-medium text-sm transition-all
+                        ${
+                          slot.booked || isTimeSlotPast(slot.time)
+                            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                            : time === slot.time
+                            ? "bg-blue-800 text-white ring-2 ring-blue-500 ring-offset-1"
+                            : "bg-blue-600 text-white hover:bg-blue-700"
+                        }`}
+                      >
+                        {slot.time}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="w-full px-5 py-4 bg-gray-50 rounded-2xl border border-gray-200 text-gray-500 font-medium min-h-[64px] flex items-center">
+                    {!date ? t('select_time') : (t('no_slots_available') || 'No slots available')}
+                  </div>
+                )}
+                <input type="text" required value={time} onChange={() => {}} className="sr-only" tabIndex={-1} />
               </div>
             </div>
 
