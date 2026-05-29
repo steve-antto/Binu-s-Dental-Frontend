@@ -57,20 +57,26 @@ export default function Portal() {
     }
   }, [currentUser]);
 
-  useEffect(() => {
-    const fetchAppointmentsByDate = async () => {
-      if (!token) return;
-      try {
-        const res = await api.get(`/medical/appointments/date/${selectedDate}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setDailyAppointments(res.data.appointments || []);
-      } catch (error) {
-        console.error(error);
+  const fetchAppointmentsByDate = async () => {
+    const token = await auth.currentUser?.getIdToken(true);
+    const API_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '';
+    
+    const response = await fetch(
+      `${API_URL}/api/v1/medical/appointments/date/${selectedDate}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
-    };
+    );
+    
+    const data = await response.json();
+    setAppointments(data.appointments || []);
+  };
+
+  useEffect(() => {
     if (isAdmin) fetchAppointmentsByDate();
-  }, [selectedDate, token, isAdmin]);
+  }, [selectedDate]);
 
   const refreshAppts = () => {
     const endpoint = isAdmin ? '/medical/all-appointments' : '/medical/my-appointments';
@@ -228,11 +234,11 @@ export default function Portal() {
                   <Link to="/booking" className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-hover transition-colors">{t('book_now')}</Link>
                 </div>
                 {loading ? <div className="p-12 text-center text-gray-400">Loading...</div> :
-                (isAdmin ? dailyAppointments : appointments).length === 0 ? (
+                appointments.length === 0 ? (
                   <div className="p-12 text-center text-gray-400"><Calendar className="w-12 h-12 mx-auto mb-3 text-gray-300" /><p>{t('no_appointments')}</p></div>
                 ) : (
                   <div className="divide-y divide-gray-50 max-h-[600px] overflow-y-auto">
-                    {(isAdmin ? dailyAppointments : appointments).map(appt => (
+                    {appointments.map(appt => (
                       <div key={appt._id} onClick={() => setSelectedAppt(appt)} className={`p-4 cursor-pointer hover:bg-blue-50/50 transition-colors ${selectedAppt?._id === appt._id ? 'bg-blue-50 border-l-4 border-primary' : ''}`}>
                         <div className="flex items-center justify-between">
                           <div>
@@ -356,6 +362,44 @@ export default function Portal() {
                             <option value="pending">{t('pending')}</option><option value="paid">{t('paid')}</option><option value="partial">{t('partial')}</option>
                           </select>
                           <button onClick={() => updateField(selectedAppt._id, 'payment', { paymentAmount: +(document.getElementById('payAmt') as any)?.value, paymentStatus: (document.getElementById('paySts') as any)?.value })} className="px-3 py-1.5 bg-primary hover:bg-primary/90 text-white rounded-lg text-xs font-bold transition-all">{t('save_btn')}</button>
+                        </div>
+                      </div>
+
+                      {/* Multi-Day Treatment UI */}
+                      <div className="w-full mt-2 pt-3 border-t border-gray-200">
+                        <div className="flex items-center gap-2 mb-3">
+                          <input type="checkbox" id="multiDayToggle" className="w-4 h-4 cursor-pointer" />
+                          <label htmlFor="multiDayToggle" className="text-sm font-bold text-gray-800 cursor-pointer">Multi-Day Treatment</label>
+                        </div>
+                        
+                        <div className="flex flex-wrap gap-4 items-end">
+                          <div>
+                            <label className="text-gray-500 text-xs font-bold block">Treatment Start</label>
+                            <input type="date" className="mt-1 px-3 py-1.5 border rounded-lg text-sm bg-white" />
+                          </div>
+                          
+                          <div>
+                            <label className="text-gray-500 text-xs font-bold block">Treatment End</label>
+                            <input type="date" className="mt-1 px-3 py-1.5 border rounded-lg text-sm bg-white" />
+                          </div>
+                          
+                          <div>
+                            <label className="text-gray-500 text-xs font-bold block">Time Slot</label>
+                            <select className="mt-1 px-3 py-1.5 border rounded-lg text-sm bg-white">
+                              <option>10:00 AM</option>
+                              <option>10:30 AM</option>
+                              <option>11:00 AM</option>
+                              <option>11:30 AM</option>
+                              <option>12:00 PM</option>
+                              <option>04:00 PM</option>
+                              <option>04:30 PM</option>
+                              <option>05:00 PM</option>
+                              <option>05:30 PM</option>
+                              <option>06:00 PM</option>
+                              <option>06:30 PM</option>
+                              <option>07:00 PM</option>
+                            </select>
+                          </div>
                         </div>
                       </div>
                     </div>

@@ -80,6 +80,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const SESSION_TIMEOUT = 20 * 60 * 1000; // 20 min
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+
+    const resetTimer = () => {
+      clearTimeout(timer);
+
+      timer = setTimeout(() => {
+        // Only trigger alert/logout if user is actually logged in
+        if (auth.currentUser) {
+          logout();
+          alert("Session expired. Please login again.");
+        }
+      }, SESSION_TIMEOUT);
+    };
+
+    const events = ["mousemove", "keydown", "click", "scroll"];
+
+    events.forEach((event) => window.addEventListener(event, resetTimer));
+
+    resetTimer();
+
+    return () => {
+      clearTimeout(timer);
+
+      events.forEach((event) => window.removeEventListener(event, resetTimer));
+    };
+  }, []);
+
   const value = {
     currentUser,
     dbUser,
