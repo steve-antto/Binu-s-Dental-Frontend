@@ -31,7 +31,7 @@ export default function Login() {
         const data = await res.json();
         role = data.user?.role;
       } else {
-        const userCred = await createUserWithEmailAndPassword(auth, email, password);
+        await createUserWithEmailAndPassword(auth, email, password);
         toast.success(t('signup_success'));
       }
       
