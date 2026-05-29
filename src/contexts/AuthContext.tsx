@@ -24,21 +24,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
-          const token = await user.getIdToken(true); // force refresh
+          const token = await user.getIdToken();
           localStorage.setItem("token", token);
           setCurrentUser(user);
           
-          // Sync with backend — explicitly pass token in header
-          // because auth.currentUser may not be set yet during onAuthStateChanged
-          const response = await api.post('/auth/sync-user', { token }, {
-            headers: { Authorization: `Bearer ${token}` }
+          const API_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '';
+          const response = await fetch(`${API_URL}/api/v1/auth/me`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           });
-          setDbUser(response.data.user);
+          
+          const data = await response.json();
+          setDbUser(data.user);
           
           // If language was previously selected, update backend
           const savedLang = localStorage.getItem('i18nextLng');
-          if (savedLang && response.data.user) {
-             await api.patch(`/auth/users/${response.data.user._id}/language`, { language: savedLang }).catch(e => console.warn('Language sync failed', e));
+          if (savedLang && data.user) {
+             await api.patch(`/auth/users/${data.user._id}/language`, { language: savedLang }).catch(e => console.warn('Language sync failed', e));
           }
           
         } catch (error) {

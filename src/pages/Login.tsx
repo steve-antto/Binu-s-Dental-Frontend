@@ -21,14 +21,25 @@ export default function Login() {
     setLoading(true);
     
     try {
+      let role = "patient";
       if (isLogin) {
-        await signInWithEmailAndPassword(auth, email, password);
+        const userCred = await signInWithEmailAndPassword(auth, email, password);
         toast.success(t('login_success'));
+        const token = await userCred.user.getIdToken();
+        const API_URL = import.meta.env.VITE_API_URL || '';
+        const res = await fetch(`${API_URL}/api/v1/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+        const data = await res.json();
+        role = data.user?.role;
       } else {
-        await createUserWithEmailAndPassword(auth, email, password);
+        const userCred = await createUserWithEmailAndPassword(auth, email, password);
         toast.success(t('signup_success'));
       }
-      navigate(redirectTo);
+      
+      if (role === "admin" || role === "doctor") {
+        navigate("/admin/portal");
+      } else {
+        navigate(redirectTo);
+      }
     } catch (error: any) {
       console.error('Auth Error:', error);
       toast.error(error.message || t('auth_failed'));
@@ -39,9 +50,20 @@ export default function Login() {
 
   const handleGoogleSignIn = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
+      const userCred = await signInWithPopup(auth, googleProvider);
       toast.success(t('google_login_success'));
-      navigate(redirectTo);
+      
+      const token = await userCred.user.getIdToken();
+      const API_URL = import.meta.env.VITE_API_URL || '';
+      const res = await fetch(`${API_URL}/api/v1/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await res.json();
+      const role = data.user?.role;
+      
+      if (role === "admin" || role === "doctor") {
+        navigate("/admin/portal");
+      } else {
+        navigate(redirectTo);
+      }
     } catch (error: any) {
       console.error('Google Auth Error:', error);
       toast.error(error.message || t('google_login_failed'));
