@@ -89,9 +89,17 @@ export default function InteractiveDentalChart({
   useEffect(() => {
     if (setMedicalHistory) {
       const findings = Object.entries(toothConditions)
+        .filter(([_, condition]) => condition)
         .map(([tooth, condition]) => `Tooth ${tooth} - ${condition}`)
         .join("\n");
-      setMedicalHistory(findings);
+
+      setMedicalHistory((prev: string) => {
+        // Safe fallback in case prev is undefined/null
+        const safePrev = prev || "";
+        const nonDentalHistory = safePrev.split("Dental Findings:")[0].trim();
+        
+        return `${nonDentalHistory}\n\nDental Findings:\n${findings}`.trim();
+      });
     }
   }, [toothConditions]);
 

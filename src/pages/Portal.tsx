@@ -41,6 +41,13 @@ export default function Portal() {
   const [token, setToken] = useState("");
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
   const [dailyAppointments, setDailyAppointments] = useState<Appt[]>([]);
+  const [medicalHistory, setMedicalHistory] = useState("");
+
+  useEffect(() => {
+    if (selectedAppt) {
+      setMedicalHistory(selectedAppt?.medicalHistory || "");
+    }
+  }, [selectedAppt]);
 
   useEffect(() => {
     if (currentUser && typeof currentUser.getIdToken === 'function') {
@@ -394,18 +401,15 @@ export default function Portal() {
                   <h3 className="font-bold text-gray-900 text-lg mb-3 flex items-center gap-2"><FileText className="w-5 h-5 text-primary" /> {t('medical_history')}</h3>
                   {isAdmin ? (
                     <div>
-                      <textarea id="historyField" defaultValue={selectedAppt.medicalHistory} rows={3} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder={t('medical_history') + '...'} />
-                      <button onClick={() => updateField(selectedAppt._id, 'medicalHistory', (document.getElementById('historyField') as any)?.value)} className="mt-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg text-xs font-bold w-full transition-all">{t('save_btn')}</button>
+                      <textarea value={medicalHistory} onChange={(e) => setMedicalHistory(e.target.value)} rows={3} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder={t('medical_history') + '...'} />
+                      <button onClick={() => updateField(selectedAppt._id, 'medicalHistory', medicalHistory)} className="mt-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg text-xs font-bold w-full transition-all">{t('save_btn')}</button>
                       
                       {selectedAppt?._id && (
                         <InteractiveDentalChart
                           key={selectedAppt._id}
                           appointmentId={selectedAppt._id}
                           existingChart={selectedAppt.dentalChart}
-                          setMedicalHistory={(val: string) => {
-                            const el = document.getElementById('historyField') as HTMLTextAreaElement;
-                            if (el) el.value = val;
-                          }}
+                          setMedicalHistory={setMedicalHistory}
                         />
                       )}
                     </div>
