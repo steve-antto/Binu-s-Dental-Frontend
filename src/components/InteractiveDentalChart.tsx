@@ -161,6 +161,11 @@ export default function InteractiveDentalChart({
       const token = await user.getIdToken(true);
       const API_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
+      console.log(
+        "Saving to:",
+        `${API_URL}/api/v1/medical/appointments/${appointmentId}/dental-chart`
+      );
+
       const response = await fetch(
         `${API_URL}/api/v1/medical/appointments/${appointmentId}/dental-chart`,
         {
@@ -180,11 +185,13 @@ export default function InteractiveDentalChart({
         }
       );
 
-      const data = await response.json();
-      console.log("Dental save response:", data);
+      console.log("Status:", response.status);
+
+      const text = await response.text();
+      console.log("Response:", text);
 
       if (!response.ok) {
-        alert(data.message || "Dental chart save failed");
+        alert(`Save failed: ${response.status}`);
         return;
       }
 
