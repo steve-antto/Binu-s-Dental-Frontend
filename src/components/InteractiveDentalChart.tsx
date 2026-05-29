@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import dentalChart from "../assets/dental-chart.png"; // Kept .jpeg from previous turns to avoid broken image
+import { auth } from "../lib/firebase";
 
 const adultUpper = [
   "1", "2", "3", "4", "5", "6", "7", "8",
@@ -38,6 +39,7 @@ export default function InteractiveDentalChart({
   appointmentId,
   existingChart,
   token,
+  setMedicalHistory,
 }: any) {
 
   const [selectedTeeth, setSelectedTeeth] =
@@ -85,6 +87,15 @@ export default function InteractiveDentalChart({
     }
   };
 
+  useEffect(() => {
+    if (setMedicalHistory) {
+      const findings = Object.entries(toothConditions)
+        .map(([tooth, condition]) => `Tooth ${tooth} - ${condition}`)
+        .join("\n");
+      setMedicalHistory(findings);
+    }
+  }, [toothConditions]);
+
   const updateCondition = (
     tooth: string,
     value: string
@@ -98,6 +109,7 @@ export default function InteractiveDentalChart({
   const saveDentalChart =
     async () => {
       try {
+        const freshToken = await auth.currentUser?.getIdToken(true);
         const baseURL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '/api/v1';
         await axios.put(
           `${baseURL}/medical/dental-chart/${appointmentId}`,
@@ -111,8 +123,7 @@ export default function InteractiveDentalChart({
           },
           {
             headers: {
-              Authorization:
-                `Bearer ${token}`,
+              Authorization: `Bearer ${freshToken}`,
             },
           }
         );
