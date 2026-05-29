@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import dentalChart from "../assets/dental-chart.png"; // Kept .jpeg from previous turns to avoid broken image
+import adultChart from "../assets/dental-chart.png";
+import childChart from "../assets/child-dental-chart.png";
 import { auth } from "../lib/firebase";
 
 const adultUpper = [
@@ -38,7 +39,7 @@ const conditions = [
 export default function InteractiveDentalChart({
   appointmentId,
   existingChart,
-  setMedicalHistory,
+  medicalHistory,
 }: any) {
 
   const [selectedTeeth, setSelectedTeeth] =
@@ -87,21 +88,46 @@ export default function InteractiveDentalChart({
   };
 
   useEffect(() => {
-    if (setMedicalHistory) {
-      const findings = Object.entries(toothConditions)
-        .filter(([_, condition]) => condition)
-        .map(([tooth, condition]) => `Tooth ${tooth} - ${condition}`)
-        .join("\n");
+    if (!medicalHistory) return;
 
-      setMedicalHistory((prev: string) => {
-        // Safe fallback in case prev is undefined/null
-        const safePrev = prev || "";
-        const nonDentalHistory = safePrev.split("Dental Findings:")[0].trim();
-        
-        return `${nonDentalHistory}\n\nDental Findings:\n${findings}`.trim();
-      });
-    }
-  }, [toothConditions]);
+    const foundTeeth: string[] = [];
+    const foundConditions: any = {};
+
+    // Match tooth numbers
+    const toothRegex = /\b([A-T]|[1-9]|[1-2][0-9]|3[0-2]|4[1-8])\b/g;
+
+    const matches = medicalHistory.match(toothRegex) || [];
+
+    matches.forEach((tooth: string) => {
+      if (!foundTeeth.includes(tooth)) {
+        foundTeeth.push(tooth);
+      }
+
+      // Find nearby treatment words
+      const lowerText = medicalHistory.toLowerCase();
+
+      if (lowerText.includes("crown") || lowerText.includes("ceramic crown")) {
+        foundConditions[tooth] = "Crown";
+      } else if (lowerText.includes("rct") || lowerText.includes("root canal")) {
+        foundConditions[tooth] = "RCT";
+      } else if (lowerText.includes("filling")) {
+        foundConditions[tooth] = "Filling";
+      } else if (lowerText.includes("implant")) {
+        foundConditions[tooth] = "Implant";
+      } else if (lowerText.includes("extraction")) {
+        foundConditions[tooth] = "Extraction";
+      } else if (lowerText.includes("cavity")) {
+        foundConditions[tooth] = "Cavity";
+      }
+    });
+
+    // Do NOT clear old data
+    setSelectedTeeth((prev) => [...new Set([...prev, ...foundTeeth])]);
+    setToothConditions((prev: any) => ({
+      ...prev,
+      ...foundConditions,
+    }));
+  }, [medicalHistory]);
 
   const updateCondition = (
     tooth: string,
@@ -205,7 +231,11 @@ export default function InteractiveDentalChart({
       <div className="relative">
 
         <img
-          src={dentalChart}
+          src={
+            dentitionType === "child"
+              ? childChart
+              : adultChart
+          }
           alt="Dental Chart"
           className="w-full rounded"
         />

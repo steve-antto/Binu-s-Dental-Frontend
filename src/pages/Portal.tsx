@@ -409,7 +409,7 @@ export default function Portal() {
                           key={selectedAppt._id}
                           appointmentId={selectedAppt._id}
                           existingChart={selectedAppt.dentalChart}
-                          setMedicalHistory={setMedicalHistory}
+                          medicalHistory={medicalHistory}
                         />
                       )}
                     </div>
