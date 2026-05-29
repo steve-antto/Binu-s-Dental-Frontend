@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { Calendar, User, Settings, FileText, ShieldCheck, Users, BarChart3, CreditCard, ClipboardList, ScanLine, Pill, Upload, X, ZoomIn, Trash2, Camera } from 'lucide-react';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
+import { auth } from '../lib/firebase';
 import InteractiveDentalChart from '../components/InteractiveDentalChart';
 
 const API_BASE = "https://binu-s-dental-backend.vercel.app";
@@ -68,7 +69,7 @@ export default function Portal() {
     };
     if (isAdmin && selectedDate) {
       fetchAppointmentsByDate();
-    } else if (isAdmin && !selectedDate) {
+    } else if (isAdmin) {
       refreshAppts();
     }
   }, [selectedDate, isAdmin]);
