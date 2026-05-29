@@ -402,7 +402,6 @@ export default function Portal() {
                           key={selectedAppt._id}
                           appointmentId={selectedAppt._id}
                           existingChart={selectedAppt.dentalChart}
-                          token={token}
                           setMedicalHistory={(val: string) => {
                             const el = document.getElementById('historyField') as HTMLTextAreaElement;
                             if (el) el.value = val;

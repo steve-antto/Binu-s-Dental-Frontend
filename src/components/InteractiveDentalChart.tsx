@@ -38,7 +38,6 @@ const conditions = [
 export default function InteractiveDentalChart({
   appointmentId,
   existingChart,
-  token,
   setMedicalHistory,
 }: any) {
 
