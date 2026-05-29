@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { Calendar, User, Settings, FileText, ShieldCheck, Users, BarChart3, CreditCard, ClipboardList, ScanLine, Pill, Upload, X, ZoomIn, Trash2, Camera } from 'lucide-react';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
+import { auth } from '../lib/firebase';
 import InteractiveDentalChart from '../components/InteractiveDentalChart';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
@@ -38,8 +39,8 @@ export default function Portal() {
   const scanFileRef = useRef<HTMLInputElement>(null);
   const reportFileRef = useRef<HTMLInputElement>(null);
   const photoFileRef = useRef<HTMLInputElement>(null);
-  const [token, setToken] = useState("");
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
+  const [, setToken] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
   const [dailyAppointments, setDailyAppointments] = useState<Appt[]>([]);
   const [medicalHistory, setMedicalHistory] = useState("");
 
@@ -58,8 +59,11 @@ export default function Portal() {
   }, [currentUser]);
 
   const fetchAppointmentsByDate = async () => {
-    const token = await auth.currentUser?.getIdToken(true);
-    const API_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '';
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const token = await user.getIdToken(true);
+    const API_URL = import.meta.env.VITE_API_URL || "https://binu-s-dental-backend.vercel.app";
 
     const response = await fetch(
       `${API_URL}/api/v1/medical/appointments/date/${selectedDate}`,
@@ -71,11 +75,15 @@ export default function Portal() {
     );
 
     const data = await response.json();
-    setAppointments(data.appointments || []);
+    setDailyAppointments(data.appointments || []);
   };
 
   useEffect(() => {
-    if (isAdmin) fetchAppointmentsByDate();
+    if (selectedDate && isAdmin) {
+      fetchAppointmentsByDate();
+    } else if (!selectedDate && isAdmin) {
+      refreshAppts();
+    }
   }, [selectedDate]);
 
   const refreshAppts = () => {
@@ -221,12 +229,22 @@ export default function Portal() {
                 {isAdmin && (
                   <div className="p-6 border-b border-gray-100 bg-gray-50/50">
                     <label className="font-semibold block mb-2 text-gray-700">Select Date</label>
-                    <input
-                      type="date"
-                      value={selectedDate}
-                      onChange={(e) => setSelectedDate(e.target.value)}
-                      className="border rounded-lg p-2 outline-none focus:ring-2 focus:ring-primary focus:border-primary text-gray-700 font-medium bg-white"
-                    />
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="date"
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                        className="border rounded px-3 py-2"
+                      />
+                      {selectedDate && (
+                        <button 
+                          onClick={() => setSelectedDate("")}
+                          className="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded text-sm font-medium transition-colors"
+                        >
+                          Clear Filter
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )}
                 <div className="p-6 border-b border-gray-100 flex items-center justify-between">
@@ -234,11 +252,11 @@ export default function Portal() {
                   <Link to="/booking" className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-hover transition-colors">{t('book_now')}</Link>
                 </div>
                 {loading ? <div className="p-12 text-center text-gray-400">Loading...</div> :
-                  appointments.length === 0 ? (
+                  (selectedDate ? dailyAppointments : appointments).length === 0 ? (
                     <div className="p-12 text-center text-gray-400"><Calendar className="w-12 h-12 mx-auto mb-3 text-gray-300" /><p>{t('no_appointments')}</p></div>
                   ) : (
                     <div className="divide-y divide-gray-50 max-h-[600px] overflow-y-auto">
-                      {appointments.map(appt => (
+                      {(selectedDate ? dailyAppointments : appointments).map(appt => (
                         <div key={appt._id} onClick={() => setSelectedAppt(appt)} className={`p-4 cursor-pointer hover:bg-blue-50/50 transition-colors ${selectedAppt?._id === appt._id ? 'bg-blue-50 border-l-4 border-primary' : ''}`}>
                           <div className="flex items-center justify-between">
                             <div>
