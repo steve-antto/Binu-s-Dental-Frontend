@@ -40,37 +40,28 @@ export default function InteractiveDentalChart({
   appointmentId,
   existingChart,
   medicalHistory,
+  onSave
 }: any) {
 
-  const [selectedTeeth, setSelectedTeeth] =
-    useState<string[]>(
-      existingChart?.selectedTeeth || []
-    );
+  let parsedChart: any = {};
+  if (existingChart) {
+    if (typeof existingChart === 'string') {
+      try {
+        parsedChart = JSON.parse(existingChart);
+      } catch (e) {
+        console.error("Failed to parse existingChart:", e);
+      }
+    } else {
+      parsedChart = existingChart;
+    }
+  }
 
-  const [toothConditions, setToothConditions] =
-    useState<any>(
-      existingChart?.toothConditions || {}
-    );
-
-  const [bitewing, setBitewing] =
-    useState(
-      existingChart?.bitewing || false
-    );
-
-  const [viewType, setViewType] =
-    useState(
-      existingChart?.viewType || "LM"
-    );
-
-  const [gender, setGender] =
-    useState(
-      existingChart?.gender || "female"
-    );
-
-  const [dentitionType, setDentitionType] =
-    useState(
-      existingChart?.dentitionType || "adult"
-    );
+  const [selectedTeeth, setSelectedTeeth] = useState<string[]>(parsedChart.selectedTeeth || []);
+  const [toothConditions, setToothConditions] = useState<any>(parsedChart.toothConditions || {});
+  const [bitewing, setBitewing] = useState(parsedChart.bitewing || false);
+  const [viewType, setViewType] = useState(parsedChart.viewType || "LM");
+  const [gender, setGender] = useState(parsedChart.gender || "female");
+  const [dentitionType, setDentitionType] = useState(parsedChart.dentitionType || "adult");
 
   const toggleTooth = (tooth: string) => {
     if (selectedTeeth.includes(tooth)) {
@@ -142,14 +133,23 @@ export default function InteractiveDentalChart({
   useEffect(() => {
     if (!existingChart) return;
 
-    console.log("Loaded chart:", existingChart);
+    let chart = existingChart;
+    if (typeof existingChart === 'string') {
+      try {
+        chart = JSON.parse(existingChart);
+      } catch (e) {
+        chart = {};
+      }
+    }
 
-    setGender(existingChart?.gender ?? "female");
-    setDentitionType(existingChart?.dentitionType ?? "adult");
-    setBitewing(existingChart?.bitewing ?? false);
-    setViewType(existingChart?.viewType ?? "LM");
-    setSelectedTeeth(existingChart?.selectedTeeth ?? []);
-    setToothConditions(existingChart?.toothConditions ?? {});
+    console.log("Loaded chart:", chart);
+
+    setGender(chart?.gender ?? "female");
+    setDentitionType(chart?.dentitionType ?? "adult");
+    setBitewing(chart?.bitewing ?? false);
+    setViewType(chart?.viewType ?? "LM");
+    setSelectedTeeth(chart?.selectedTeeth ?? []);
+    setToothConditions(chart?.toothConditions ?? {});
   }, [existingChart]);
 
   const saveDentalChart = async () => {
@@ -187,6 +187,14 @@ export default function InteractiveDentalChart({
             viewType,
             selectedTeeth,
             toothConditions,
+            dentalChart: {
+              gender,
+              dentitionType,
+              bitewing,
+              viewType,
+              selectedTeeth,
+              toothConditions,
+            }
           }),
         }
       );
@@ -200,6 +208,7 @@ export default function InteractiveDentalChart({
         return;
       }
 
+      if (onSave) onSave();
       alert("Dental chart saved");
 
     } catch (error) {
