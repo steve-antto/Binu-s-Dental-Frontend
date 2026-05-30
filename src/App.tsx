@@ -17,6 +17,7 @@ import Services from './pages/Services';
 import Contact from './pages/Contact';
 import About from './pages/About';
 import Doctors from './pages/Doctors';
+import Reviews from './pages/Reviews';
 import Booking from './pages/Booking';
 import AdminLogin from './pages/AdminLogin';
 
