@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { Calendar, User, Settings, FileText, ShieldCheck, Users, BarChart3, CreditCard, ClipboardList, ScanLine, Pill, Upload, X, ZoomIn, Trash2, Camera } from 'lucide-react';
+import { Calendar, User, Settings, FileText, ShieldCheck, Users, BarChart3, CreditCard, ClipboardList, ScanLine, Pill, Upload, X, ZoomIn, Trash2, Camera, Clock } from 'lucide-react';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
 import { auth } from '../lib/firebase';
@@ -42,6 +42,19 @@ export default function Portal() {
   const [token, setToken] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [dailyAppointments, setDailyAppointments] = useState<Appt[]>([]);
+
+  // Treatment Scheduling state
+  const [selectedApptForTreatment, setSelectedApptForTreatment] = useState<any>(null);
+  const [treatmentForm, setTreatmentForm] = useState({
+    treatmentName: "",
+    treatmentDays: 1,
+    startDate: "",
+    endDate: "",
+    dailyStartTime: "10:00",
+    dailyEndTime: "11:00",
+    notes: ""
+  });
+  const [isSubmittingTreatment, setIsSubmittingTreatment] = useState(false);
 
   useEffect(() => {
     if (currentUser && typeof currentUser.getIdToken === 'function') {
@@ -199,6 +212,69 @@ export default function Portal() {
   const getFileUrl = (url: string | undefined | null) => {
     if (!url) return '';
     return url.startsWith('http') ? url : `${API_BASE}${url}`;
+  };
+
+  const handleScheduleTreatment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedApptForTreatment || !token) return;
+
+    setIsSubmittingTreatment(true);
+    
+    try {
+      const sessions = [];
+      const start = new Date(treatmentForm.startDate);
+      for (let i = 0; i < treatmentForm.treatmentDays; i++) {
+        const currentDate = new Date(start);
+        currentDate.setDate(start.getDate() + i);
+        const dateString = currentDate.toISOString().split('T')[0];
+        
+        sessions.push({
+          date: dateString,
+          startTime: treatmentForm.dailyStartTime,
+          endTime: treatmentForm.dailyEndTime
+        });
+      }
+
+      const payload = {
+        patientId: selectedApptForTreatment.patientId || selectedApptForTreatment._id,
+        patientName: selectedApptForTreatment.patientName,
+        treatmentName: treatmentForm.treatmentName,
+        treatmentDays: treatmentForm.treatmentDays,
+        sessions,
+        notes: treatmentForm.notes
+      };
+
+      const response = await fetch(`https://binu-s-dental-backend.vercel.app/api/v1/treatment-schedules`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify(payload)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to save treatment schedule');
+      }
+
+      toast.success("Treatment schedule saved successfully");
+      setSelectedApptForTreatment(null);
+      setTreatmentForm({
+        treatmentName: "",
+        treatmentDays: 1,
+        startDate: "",
+        endDate: "",
+        dailyStartTime: "10:00",
+        dailyEndTime: "11:00",
+        notes: ""
+      });
+    } catch (err: any) {
+      console.error("Error saving treatment schedule:", err);
+      toast.error(err.message || "Failed to save treatment schedule");
+    } finally {
+      setIsSubmittingTreatment(false);
+    }
   };
 
 
@@ -388,6 +464,14 @@ export default function Portal() {
                       <span className={`px-3 py-1 rounded-full text-sm font-bold ${payColor(selectedAppt.paymentStatus || 'pending')}`}>₹{selectedAppt.paymentAmount || 0}</span>
                       <span className="text-gray-500 text-sm ml-2">({t(selectedAppt.paymentStatus || 'pending')})</span>
                     </div>
+                  )}
+                  {isAdmin && (
+                    <button
+                      onClick={() => setSelectedApptForTreatment(selectedAppt)}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-bold flex items-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-md shadow-blue-600/10"
+                    >
+                      <Clock className="w-4 h-4" /> Schedule Treatment
+                    </button>
                   )}
                   {isAdmin && (
                     <button
@@ -598,6 +682,148 @@ export default function Portal() {
           )}
         </div>
       </div>
+
+      {/* Treatment Scheduling Modal */}
+      {selectedApptForTreatment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
+            <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50/50">
+              <h3 className="text-xl font-bold text-gray-900">Schedule Multi-Day Treatment</h3>
+              <button 
+                onClick={() => setSelectedApptForTreatment(null)}
+                className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleScheduleTreatment} className="p-6 space-y-4">
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-100 rounded-xl text-sm text-blue-800">
+                Scheduling for <span className="font-bold">{selectedApptForTreatment.patientName}</span>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-sm font-bold text-gray-700">Treatment Name</label>
+                <input 
+                  type="text" required 
+                  placeholder="e.g., Root Canal"
+                  value={treatmentForm.treatmentName}
+                  onChange={e => setTreatmentForm({...treatmentForm, treatmentName: e.target.value})}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-sm font-bold text-gray-700">Number of Days</label>
+                  <input 
+                    type="number" required min="1" max="30"
+                    value={treatmentForm.treatmentDays}
+                    onChange={e => {
+                      const days = parseInt(e.target.value) || 1;
+                      let endDate = treatmentForm.endDate;
+                      if (treatmentForm.startDate) {
+                        const start = new Date(treatmentForm.startDate);
+                        start.setDate(start.getDate() + days - 1);
+                        endDate = start.toISOString().split('T')[0];
+                      }
+                      setTreatmentForm({...treatmentForm, treatmentDays: days, endDate});
+                    }}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-bold text-gray-700">Start Date</label>
+                  <div className="relative">
+                    <Calendar className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input 
+                      type="date" required 
+                      value={treatmentForm.startDate}
+                      onChange={e => {
+                        const startStr = e.target.value;
+                        let endDate = treatmentForm.endDate;
+                        if (startStr) {
+                          const start = new Date(startStr);
+                          start.setDate(start.getDate() + treatmentForm.treatmentDays - 1);
+                          endDate = start.toISOString().split('T')[0];
+                        }
+                        setTreatmentForm({...treatmentForm, startDate: startStr, endDate});
+                      }}
+                      className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-sm font-bold text-gray-700">End Date</label>
+                <div className="relative">
+                  <Calendar className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input 
+                    type="date" required readOnly
+                    value={treatmentForm.endDate}
+                    className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-gray-500 cursor-not-allowed"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-sm font-bold text-gray-700">Daily Start Time</label>
+                  <div className="relative">
+                    <Clock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input 
+                      type="time" required 
+                      value={treatmentForm.dailyStartTime}
+                      onChange={e => setTreatmentForm({...treatmentForm, dailyStartTime: e.target.value})}
+                      className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-bold text-gray-700">Daily End Time</label>
+                  <div className="relative">
+                    <Clock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input 
+                      type="time" required 
+                      value={treatmentForm.dailyEndTime}
+                      onChange={e => setTreatmentForm({...treatmentForm, dailyEndTime: e.target.value})}
+                      className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-sm font-bold text-gray-700">Notes (Optional)</label>
+                <textarea 
+                  rows={2}
+                  value={treatmentForm.notes}
+                  onChange={e => setTreatmentForm({...treatmentForm, notes: e.target.value})}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none resize-none"
+                />
+              </div>
+
+              <div className="pt-4 flex gap-3">
+                <button 
+                  type="button"
+                  onClick={() => setSelectedApptForTreatment(null)}
+                  className="flex-1 px-4 py-2 border-2 border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  disabled={isSubmittingTreatment}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50"
+                >
+                  {isSubmittingTreatment ? "Saving..." : "Save Schedule"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </>
   );
 }
