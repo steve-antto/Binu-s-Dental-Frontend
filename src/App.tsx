@@ -21,7 +21,6 @@ import Reviews from './pages/Reviews';
 import Booking from './pages/Booking';
 import AdminLogin from './pages/AdminLogin';
 import AdminPortal from './pages/AdminPortal';
-import AdminProtectedRoute from './components/AdminProtectedRoute';
 
 function Layout() {
   return (
@@ -58,11 +57,7 @@ function App() {
             <Route path="reviews" element={<Reviews />} />
             <Route path="booking" element={<Booking />} />
             <Route path="admin/login" element={<AdminLogin />} />
-            <Route path="admin/portal" element={
-              <AdminProtectedRoute>
-                <AdminPortal />
-              </AdminProtectedRoute>
-            } />
+            <Route path="admin/portal" element={<AdminPortal />} />
             <Route path="login" element={<Login />} />
             <Route path="portal" element={<Portal />} />
           </Route>

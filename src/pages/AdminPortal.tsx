@@ -31,7 +31,10 @@ export default function AdminPortal() {
   useEffect(() => {
     const initializeAdmin = async () => {
       try {
-        if (!currentUser) return;
+        if (!currentUser) {
+          setAuthLoading(false);
+          return;
+        }
 
         const freshToken = await currentUser.getIdToken(true);
         setToken(freshToken);
@@ -46,14 +49,15 @@ export default function AdminPortal() {
   }, [currentUser]);
 
   useEffect(() => {
-    if (!selectedDate || !token) return;
+    if (!selectedDate) return;
+
+    const headers: any = {};
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
 
     axios
-      .get(`${API_URL}/appointments/by-date/${selectedDate}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
+      .get(`${API_URL}/appointments/by-date/${selectedDate}`, { headers })
       .then((res) => {
         setAppointments(res.data.appointments);
         setCount(res.data.count);
@@ -123,9 +127,6 @@ export default function AdminPortal() {
         <h2>Loading Admin Portal...</h2>
       </div>
     );
-  }
-  if (!currentUser || !token) {
-    return null;
   }
 
   return (
