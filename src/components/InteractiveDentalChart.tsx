@@ -266,72 +266,74 @@ export default function InteractiveDentalChart({
         />
 
         {/* Upper Teeth */}
-        <div className="absolute top-3 left-0 w-full flex justify-center gap-2">
-
-          {(dentitionType === "adult" ? adultUpper : childUpper).map(
-            (tooth) => (
+        {dentitionType === "adult" ? (
+          <div className="absolute top-2 sm:top-4 left-0 right-0 mx-auto w-[96%] flex justify-between px-1 sm:px-2">
+            {adultUpper.map((tooth) => (
               <button
                 key={tooth}
-                onClick={() =>
-                  toggleTooth(
-                    tooth
-                  )
-                }
-                className={`
-                w-10
-                h-10
-                rounded-full
-                text-xs
-                font-bold
-                transition-all
-
-                ${selectedTeeth.includes(
-                  tooth
-                )
+                onClick={() => toggleTooth(tooth)}
+                className={`w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full text-[10px] sm:text-xs font-bold transition-all flex items-center justify-center shadow-md ${
+                  selectedTeeth.includes(tooth)
                     ? "bg-cyan-500 text-white scale-110 shadow-lg"
-                    : "bg-white/80 hover:bg-cyan-200 text-gray-900"
-                  }
-                `}
+                    : "bg-white/90 hover:bg-cyan-200 text-gray-900"
+                }`}
               >
                 {tooth}
               </button>
-            )
-          )}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="absolute top-4 sm:top-8 left-0 right-0 mx-auto w-[82%] flex justify-between px-2">
+            {childUpper.map((tooth) => (
+              <button
+                key={tooth}
+                onClick={() => toggleTooth(tooth)}
+                className={`w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full text-[10px] sm:text-xs font-bold transition-all flex items-center justify-center shadow-md ${
+                  selectedTeeth.includes(tooth)
+                    ? "bg-cyan-500 text-white scale-110 shadow-lg"
+                    : "bg-white/90 hover:bg-cyan-200 text-gray-900"
+                }`}
+              >
+                {tooth}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Lower Teeth */}
-        <div className="absolute bottom-5 left-0 w-full flex justify-center gap-2">
-
-          {(dentitionType === "adult" ? adultLower : childLower).map(
-            (tooth) => (
+        {dentitionType === "adult" ? (
+          <div className="absolute bottom-2 sm:bottom-4 left-0 right-0 mx-auto w-[96%] flex justify-between px-1 sm:px-2">
+            {adultLower.map((tooth) => (
               <button
                 key={tooth}
-                onClick={() =>
-                  toggleTooth(
-                    tooth
-                  )
-                }
-                className={`
-                w-10
-                h-10
-                rounded-full
-                text-xs
-                font-bold
-                transition-all
-
-                ${selectedTeeth.includes(
-                  tooth
-                )
+                onClick={() => toggleTooth(tooth)}
+                className={`w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full text-[10px] sm:text-xs font-bold transition-all flex items-center justify-center shadow-md ${
+                  selectedTeeth.includes(tooth)
                     ? "bg-cyan-500 text-white scale-110 shadow-lg"
-                    : "bg-white/80 hover:bg-cyan-200 text-gray-900"
-                  }
-                `}
+                    : "bg-white/90 hover:bg-cyan-200 text-gray-900"
+                }`}
               >
                 {tooth}
               </button>
-            )
-          )}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="absolute bottom-4 sm:bottom-8 left-0 right-0 mx-auto w-[74%] flex justify-between px-2">
+            {childLower.map((tooth) => (
+              <button
+                key={tooth}
+                onClick={() => toggleTooth(tooth)}
+                className={`w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full text-[10px] sm:text-xs font-bold transition-all flex items-center justify-center shadow-md ${
+                  selectedTeeth.includes(tooth)
+                    ? "bg-cyan-500 text-white scale-110 shadow-lg"
+                    : "bg-white/90 hover:bg-cyan-200 text-gray-900"
+                }`}
+              >
+                {tooth}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Conditions */}
