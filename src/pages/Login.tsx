@@ -35,7 +35,7 @@ export default function Login() {
       }
       
       if (role === "admin" || role === "doctor") {
-        navigate("/admin/portal");
+        navigate("/portal");
       } else {
         navigate(redirectTo);
       }
@@ -58,7 +58,7 @@ export default function Login() {
       const role = data.user?.role;
       
       if (role === "admin" || role === "doctor") {
-        navigate("/admin/portal");
+        navigate("/portal");
       } else {
         navigate(redirectTo);
       }

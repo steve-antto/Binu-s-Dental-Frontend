@@ -31,7 +31,7 @@ export default function AdminLogin() {
          toast.success("Admin access granted.");
          const token = await userCredential.user.getIdToken(true);
          localStorage.setItem("token", token);
-         navigate('/admin/portal', { replace: true });
+         navigate('/portal', { replace: true });
       } else {
          await signOut(auth);
          localStorage.removeItem('firebaseIdToken');
