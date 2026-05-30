@@ -515,7 +515,6 @@ export default function Portal() {
                           key={selectedAppt._id}
                           appointmentId={selectedAppt._id}
                           existingChart={selectedAppt.dentalChart}
-                          medicalHistory={selectedAppt.medicalHistory}
                           onSave={refreshAppts}
                           token={token}
                         />

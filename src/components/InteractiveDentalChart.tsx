@@ -39,7 +39,6 @@ const conditions = [
 export default function InteractiveDentalChart({
   appointmentId,
   existingChart,
-  medicalHistory,
   onSave
 }: any) {
 
@@ -75,50 +74,18 @@ export default function InteractiveDentalChart({
         ...selectedTeeth,
         tooth,
       ]);
+
+      const textArea = document.getElementById('historyField') as HTMLTextAreaElement;
+      if (textArea) {
+        const textToAdd = `Tooth ${tooth}`;
+        if (!textArea.value.includes(textToAdd)) {
+          textArea.value = textArea.value ? `${textArea.value}\n${textToAdd}` : textToAdd;
+        }
+      }
     }
   };
 
-  useEffect(() => {
-    if (!medicalHistory) return;
 
-    const foundTeeth: string[] = [];
-    const foundConditions: any = {};
-
-    // Match tooth numbers
-    const toothRegex = /\b([A-T]|[1-9]|[1-2][0-9]|3[0-2]|4[1-8])\b/g;
-
-    const matches = medicalHistory.match(toothRegex) || [];
-
-    matches.forEach((tooth: string) => {
-      if (!foundTeeth.includes(tooth)) {
-        foundTeeth.push(tooth);
-      }
-
-      // Find nearby treatment words
-      const lowerText = medicalHistory.toLowerCase();
-
-      if (lowerText.includes("crown") || lowerText.includes("ceramic crown")) {
-        foundConditions[tooth] = "Crown";
-      } else if (lowerText.includes("rct") || lowerText.includes("root canal")) {
-        foundConditions[tooth] = "RCT";
-      } else if (lowerText.includes("filling")) {
-        foundConditions[tooth] = "Filling";
-      } else if (lowerText.includes("implant")) {
-        foundConditions[tooth] = "Implant";
-      } else if (lowerText.includes("extraction")) {
-        foundConditions[tooth] = "Extraction";
-      } else if (lowerText.includes("cavity")) {
-        foundConditions[tooth] = "Cavity";
-      }
-    });
-
-    // Do NOT clear old data
-    setSelectedTeeth((prev) => [...new Set([...prev, ...foundTeeth])]);
-    setToothConditions((prev: any) => ({
-      ...prev,
-      ...foundConditions,
-    }));
-  }, [medicalHistory]);
 
   const updateCondition = (
     tooth: string,
@@ -128,6 +95,19 @@ export default function InteractiveDentalChart({
       ...toothConditions,
       [tooth]: value,
     });
+
+    if (value) {
+      const textArea = document.getElementById('historyField') as HTMLTextAreaElement;
+      if (textArea) {
+        const textToAdd = `Tooth ${tooth} - ${value}`;
+        if (!textArea.value.includes(`Tooth ${tooth} -`)) {
+          textArea.value = textArea.value ? `${textArea.value}\n${textToAdd}` : textToAdd;
+        } else {
+          const regex = new RegExp(`Tooth ${tooth} - [^\\n]+`);
+          textArea.value = textArea.value.replace(regex, textToAdd);
+        }
+      }
+    }
   };
 
   useEffect(() => {
