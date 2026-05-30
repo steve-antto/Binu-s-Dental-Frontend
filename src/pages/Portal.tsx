@@ -510,15 +510,6 @@ export default function Portal() {
                       <textarea key={`history-${selectedAppt._id}`} id="historyField" defaultValue={selectedAppt.medicalHistory} rows={3} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder={t('medical_history') + '...'} />
                       <button onClick={() => updateField(selectedAppt._id, 'medicalHistory', (document.getElementById('historyField') as any)?.value)} className="mt-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg text-xs font-bold w-full transition-all">{t('save_btn')}</button>
                       
-                      {selectedAppt?._id && (
-                        <InteractiveDentalChart
-                          key={selectedAppt._id}
-                          appointmentId={selectedAppt._id}
-                          existingChart={selectedAppt.dentalChart}
-                          onSave={refreshAppts}
-                          token={token}
-                        />
-                      )}
                     </div>
                   ) : (
                     <div className={`text-sm whitespace-pre-wrap rounded-xl p-4 ${selectedAppt.medicalHistory ? 'bg-green-50 text-green-900 border border-green-200' : 'bg-gray-50 text-gray-400'}`}>
@@ -527,6 +518,19 @@ export default function Portal() {
                   )}
                 </div>
               </div>
+
+              {/* Full Width Dental Chart */}
+              {isAdmin && selectedAppt?._id && (
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                  <InteractiveDentalChart
+                    key={selectedAppt._id}
+                    appointmentId={selectedAppt._id}
+                    existingChart={selectedAppt.dentalChart}
+                    onSave={refreshAppts}
+                    token={token}
+                  />
+                </div>
+              )}
 
               {/* Scans & Reports Card (Spans Full Horizontal Width!) */}
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">

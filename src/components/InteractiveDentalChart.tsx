@@ -357,7 +357,7 @@ export default function InteractiveDentalChart({
                     e.target.value
                   )
                 }
-                className="w-full p-2 rounded text-gray-900 font-medium"
+                className="w-full p-2 rounded bg-white text-gray-900 font-medium outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">
                   Select Condition
