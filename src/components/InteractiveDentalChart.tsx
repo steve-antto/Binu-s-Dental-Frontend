@@ -6,12 +6,12 @@ import { auth } from "../lib/firebase";
 
 const adultUpper = [
   "1", "2", "3", "4", "5", "6", "7", "8",
-  "9", "10", "11", "12", "13", "14", "15", "16"
+  "8", "7", "6", "5", "4", "3", "2", "1"
 ];
 
 const adultLower = [
-  "32", "31", "30", "29", "28", "27", "26", "25",
-  "24", "23", "22", "21", "20", "19", "18", "17"
+  "1", "2", "3", "4", "5", "6", "7", "8",
+  "8", "7", "6", "5", "4", "3", "2", "1"
 ];
 
 const childUpper = [
@@ -272,11 +272,10 @@ export default function InteractiveDentalChart({
               <button
                 key={tooth}
                 onClick={() => toggleTooth(tooth)}
-                className={`w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full text-[10px] sm:text-xs font-bold transition-all flex items-center justify-center shadow-md ${
-                  selectedTeeth.includes(tooth)
-                    ? "bg-cyan-500 text-white scale-110 shadow-lg"
-                    : "bg-white/90 hover:bg-cyan-200 text-gray-900"
-                }`}
+                className={`w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full text-[10px] sm:text-xs font-bold transition-all flex items-center justify-center shadow-md ${selectedTeeth.includes(tooth)
+                  ? "bg-cyan-500 text-white scale-110 shadow-lg"
+                  : "bg-white/90 hover:bg-cyan-200 text-gray-900"
+                  }`}
               >
                 {tooth}
               </button>
@@ -288,11 +287,10 @@ export default function InteractiveDentalChart({
               <button
                 key={tooth}
                 onClick={() => toggleTooth(tooth)}
-                className={`w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full text-[10px] sm:text-xs font-bold transition-all flex items-center justify-center shadow-md ${
-                  selectedTeeth.includes(tooth)
-                    ? "bg-cyan-500 text-white scale-110 shadow-lg"
-                    : "bg-white/90 hover:bg-cyan-200 text-gray-900"
-                }`}
+                className={`w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full text-[10px] sm:text-xs font-bold transition-all flex items-center justify-center shadow-md ${selectedTeeth.includes(tooth)
+                  ? "bg-cyan-500 text-white scale-110 shadow-lg"
+                  : "bg-white/90 hover:bg-cyan-200 text-gray-900"
+                  }`}
               >
                 {tooth}
               </button>
@@ -307,11 +305,10 @@ export default function InteractiveDentalChart({
               <button
                 key={tooth}
                 onClick={() => toggleTooth(tooth)}
-                className={`w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full text-[10px] sm:text-xs font-bold transition-all flex items-center justify-center shadow-md ${
-                  selectedTeeth.includes(tooth)
-                    ? "bg-cyan-500 text-white scale-110 shadow-lg"
-                    : "bg-white/90 hover:bg-cyan-200 text-gray-900"
-                }`}
+                className={`w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full text-[10px] sm:text-xs font-bold transition-all flex items-center justify-center shadow-md ${selectedTeeth.includes(tooth)
+                  ? "bg-cyan-500 text-white scale-110 shadow-lg"
+                  : "bg-white/90 hover:bg-cyan-200 text-gray-900"
+                  }`}
               >
                 {tooth}
               </button>
@@ -323,11 +320,10 @@ export default function InteractiveDentalChart({
               <button
                 key={tooth}
                 onClick={() => toggleTooth(tooth)}
-                className={`w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full text-[10px] sm:text-xs font-bold transition-all flex items-center justify-center shadow-md ${
-                  selectedTeeth.includes(tooth)
-                    ? "bg-cyan-500 text-white scale-110 shadow-lg"
-                    : "bg-white/90 hover:bg-cyan-200 text-gray-900"
-                }`}
+                className={`w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full text-[10px] sm:text-xs font-bold transition-all flex items-center justify-center shadow-md ${selectedTeeth.includes(tooth)
+                  ? "bg-cyan-500 text-white scale-110 shadow-lg"
+                  : "bg-white/90 hover:bg-cyan-200 text-gray-900"
+                  }`}
               >
                 {tooth}
               </button>
